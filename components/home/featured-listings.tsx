@@ -44,11 +44,11 @@ export function FeaturedListings() {
   }, [])
 
   return (
-    <section className="bg-gradient-to-b from-white to-gray-50 py-16 md:py-24">
+    <section className="bg-gradient-to-b from-white to-gray-50 py-16 md:py-2">
       <div className="container mx-auto px-4">
         <div className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h2 className="mb-2 text-3xl font-bold text-foreground md:text-4xl">
+            <h2 className="mb-2 text-xl font-bold text-foreground md:text-2xl">
               Latest Listings
             </h2>
             <p className="text-muted-foreground">
