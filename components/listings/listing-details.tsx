@@ -21,7 +21,7 @@ import {
   TagIcon
 } from "@heroicons/react/24/outline"
 import { ProposeTradeDialog } from "@/components/trades/propose-trade-dialog"
-import { formatCurrency } from "@/lib/utils/currency"
+import { formatNaira } from "@/lib/utils/currency"
 import { formatDistanceToNow } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"

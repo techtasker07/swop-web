@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
   PlusIcon, 
-  XIcon,
+  XMarkIcon,
   ArrowsRightLeftIcon,
   ArchiveBoxIcon,
   ClockIcon,
@@ -20,9 +20,10 @@ import {
 } from "@heroicons/react/24/outline"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
-import { formatCurrency } from "@/lib/utils/currency"
+import { formatNaira } from "@/lib/utils/currency"
 import Image from "next/image"
 import type { Listing, Profile } from "@/lib/types/database"
+import { XIcon } from "lucide-react"
 
 interface ProposeTradeDialogProps {
   open: boolean

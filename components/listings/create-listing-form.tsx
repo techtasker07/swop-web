@@ -14,12 +14,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { 
   PhotoIcon, 
-  XIcon,
+  XMarkIcon,
   PlusIcon
 } from "@heroicons/react/24/outline"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import Image from "next/image"
+import { XIcon } from "lucide-react"
+import { XIcon } from "lucide-react"
+import { XIcon } from "lucide-react"
 
 const listingSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),

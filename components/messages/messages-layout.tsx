@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { 
   PlusIcon,
-  MessageCircleIcon,
+  ChatBubbleOvalLeftIcon,
   ArrowLeftIcon
 } from "@heroicons/react/24/outline"
 import { formatDistanceToNow } from "date-fns"
@@ -75,7 +75,7 @@ export function MessagesLayout({ conversations, participants, currentUser }: Mes
       {conversations.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
-            <MessageCircleIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <ChatBubbleOvalLeftIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">No messages yet</h3>
             <p className="text-muted-foreground mb-6">
               Start a conversation by messaging someone about their listing

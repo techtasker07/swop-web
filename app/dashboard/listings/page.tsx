@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PlusIcon, EyeIcon, HeartIcon } from "@heroicons/react/24/outline"
-import { formatCurrency } from "@/lib/utils/currency"
+import { formatNaira } from "@/lib/utils/currency"
 import { formatDistanceToNow } from "date-fns"
 import Image from "next/image"
 

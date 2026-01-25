@@ -9,7 +9,7 @@ import {
   HandThumbUpIcon, 
   ClockIcon, 
   CurrencyDollarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   StarIcon
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
@@ -84,7 +84,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     {
       label: 'Score',
       value: stats.barter_score.toString(),
-      icon: TrendingUpIcon,
+      icon: ArrowTrendingUpIcon,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },

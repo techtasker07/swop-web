@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   StarIcon,
   TrophyIcon
 } from "@heroicons/react/24/outline"
@@ -17,7 +17,7 @@ export function ProfileStats({ profile }: ProfileStatsProps) {
     {
       label: 'Barter Score',
       value: (profile?.barter_score || 0).toString(),
-      icon: TrendingUpIcon,
+      icon: ArrowTrendingUpIcon,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },

@@ -12,7 +12,7 @@ import {
 import { Package } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { formatCurrency } from "@/lib/utils/currency"
+import { formatNaira } from "@/lib/utils/currency"
 
 interface SmartMatchesProps {
   matches: Array<{
