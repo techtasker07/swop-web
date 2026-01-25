@@ -20,9 +20,7 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import Image from "next/image"
-import { XIcon } from "lucide-react"
-import { XIcon } from "lucide-react"
-import { XIcon } from "lucide-react"
+import { X } from "lucide-react"
 
 const listingSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
@@ -344,7 +342,7 @@ export function CreateListingForm() {
                     onClick={() => removeImage(index)}
                     className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                   >
-                    <XIcon className="h-4 w-4" />
+                    <X className="h-4 w-4" />
                   </button>
                   {index === 0 && (
                     <Badge className="absolute bottom-2 left-2 text-xs">Primary</Badge>
@@ -401,7 +399,7 @@ export function CreateListingForm() {
                     onClick={() => removeTag(tag)}
                     className="ml-1 hover:text-red-500"
                   >
-                    <XIcon className="h-3 w-3" />
+                    <X className="h-3 w-3" />
                   </button>
                 </Badge>
               ))}
@@ -430,7 +428,7 @@ export function CreateListingForm() {
                     onClick={() => removePreferredItem(item)}
                     className="ml-1 hover:text-red-500"
                   >
-                    <XIcon className="h-3 w-3" />
+                    <X className="h-3 w-3" />
                   </button>
                 </Badge>
               ))}

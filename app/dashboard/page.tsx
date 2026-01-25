@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     .eq("seller_id", user.id)
     .eq("is_available", true)
 
-  // Fetch trades count (placeholder - we'll implement trades table later)
+  // Fetch trades count (when trades table is implemented)
   const pendingTrades = 0
   const acceptedTrades = 0
 
@@ -65,6 +65,27 @@ export default async function DashboardPage() {
     .eq("is_available", true)
     .limit(6)
 
+  // Fetch recent trades (when trades table is implemented)
+  let recentTrades: any[] = []
+  try {
+    const { data } = await supabase
+      .from("trades")
+      .select(`
+        id, status, created_at,
+        listing:listings!target_listing_id(title),
+        other_user:profiles!receiver_id(display_name)
+      `)
+      .or(`proposer_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .order("created_at", { ascending: false })
+      .limit(5)
+    
+    recentTrades = data || []
+  } catch (error) {
+    // Trades table might not exist yet
+    console.log("Trades table not available yet")
+    recentTrades = []
+  }
+
   const displayName = profile?.display_name || user?.user_metadata?.display_name || "there"
   const userLocation = profile?.location?.state || profile?.location?.city || null
 
@@ -80,8 +101,14 @@ export default async function DashboardPage() {
     total_ratings: profile?.total_ratings || 0,
   }
 
-  // Mock recent trades data (we'll implement this properly later)
-  const recentTrades = []
+  // Format trades data for the component
+  const formattedTrades = recentTrades.map((trade: any) => ({
+    id: trade.id,
+    item: trade.listing?.title || "Unknown Item",
+    with: trade.other_user?.display_name || "Unknown User",
+    status: trade.status,
+    created_at: trade.created_at
+  }))
 
   return (
     <div className="space-y-8">
@@ -96,15 +123,9 @@ export default async function DashboardPage() {
       {/* Quick Actions */}
       <QuickActions />
 
-      {/* Smart Matches */}
-      <SmartMatches 
-        matches={smartMatches || []} 
-        userLocation={userLocation}
-      />
-
       {/* Recent Trades */}
-      {recentTrades.length > 0 && (
-        <RecentTrades trades={recentTrades} />
+      {formattedTrades.length > 0 && (
+        <RecentTrades trades={formattedTrades} />
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">

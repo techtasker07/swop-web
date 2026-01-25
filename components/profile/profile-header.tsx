@@ -25,11 +25,12 @@ export function ProfileHeader({ profile, user }: ProfileHeaderProps) {
 
   const displayName = profile?.display_name || user?.user_metadata?.display_name || "User"
   const username = profile?.username || ""
-  const bio = profile?.bio || "Passionate about sustainable living and community sharing. Love trading electronics and books!"
+  const bio = profile?.bio || "No bio added yet."
   const location = profile?.location?.state || profile?.location?.city || "Location not set"
   const avatarUrl = profile?.avatar_url || profile?.profile_image_url
 
-  const interests = ["Electronics", "Books", "Sports"] // Mock data - could be from profile
+  // Get interests from profile metadata or tags
+  const interests: string[] = profile?.metadata?.interests || []
 
   return (
     <>
@@ -75,13 +76,15 @@ export function ProfileHeader({ profile, user }: ProfileHeaderProps) {
               <p className="text-muted-foreground leading-relaxed">{bio}</p>
 
               {/* Interests */}
-              <div className="flex flex-wrap gap-2">
-                {interests.map((interest) => (
-                  <Badge key={interest} variant="secondary" className="text-xs">
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
+              {interests.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {interests.map((interest) => (
+                    <Badge key={interest} variant="secondary" className="text-xs">
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
+              )}
 
               {/* Edit Button */}
               <Button 

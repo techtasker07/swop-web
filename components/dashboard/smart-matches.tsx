@@ -153,7 +153,7 @@ export function SmartMatches({ matches, userLocation, isLoading }: SmartMatchesP
                   
                   {match.price > 0 && (
                     <p className="text-sm font-semibold text-emerald-600">
-                      {formatCurrency(match.price)}
+                      {formatNaira(match.price)}
                     </p>
                   )}
                   

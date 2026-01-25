@@ -34,6 +34,7 @@ export interface Profile {
   business_phone: string | null
   year_established: number | null
   verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
+  metadata: any | null
   created_at: string
   updated_at: string
 }
@@ -102,168 +103,26 @@ export interface Trade {
   id: string
   proposer_id: string
   receiver_id: string
-  target_listing_id: number
+  target_listing_id?: number
   message: string | null
-  status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
-  proposer_items: any[]
-  receiver_items: any[] | null
-  estimated_value: number
-  agreed_value: number | null
+  status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled' | 'expired'
+  proposer_items: any
+  receiver_items: any | null
+  estimated_value?: number
+  agreed_value?: number | null
   meeting_location: string | null
   meeting_time: string | null
-  completion_notes: string | null
+  completion_notes?: string | null
+  completion_code?: string | null
+  rejection_reason?: string | null
+  metadata: any | null
   created_at: string
   updated_at: string
+  completed_at?: string | null
   // Joined data
   proposer?: Profile
   receiver?: Profile
   target_listing?: Listing
-}
-
-export interface Conversation {
-  id: string
-  participants: string[]
-  listing_id: number | null
-  trade_id: string | null
-  last_message_at: string
-  created_at: string
-  updated_at: string
-  // Joined data
-  listing?: Listing
-  trade?: Trade
-  messages?: Message[]
-}
-
-export interface Message {
-  id: string
-  conversation_id: string
-  sender_id: string
-  content: string
-  message_type: 'text' | 'image' | 'trade_proposal' | 'system'
-  metadata: any | null
-  is_read: boolean
-  created_at: string
-  // Joined data
-  sender?: Profile
-}
-
-export interface TimeBankingRequest {
-  id: string
-  requester_id: string
-  title: string
-  description: string
-  hours_requested: number
-  category: string
-  location: string
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled'
-  helper_id: string | null
-  completion_notes: string | null
-  created_at: string
-  updated_at: string
-  // Joined data
-  requester?: Profile
-  helper?: Profile
-}
-
-export interface Favorite {
-  id: string
-  user_id: string
-  listing_id: number
-  created_at: string
-}
-
-// Form types
-export interface CreateListingData {
-  title: string
-  description: string
-  category: string
-  type: 'item' | 'service'
-  condition?: string
-  price: number
-  location: string
-  tags?: string[]
-  preferred_items?: string[]
-}
-
-export interface UpdateProfileData {
-  display_name?: string
-  username?: string
-  bio?: string
-  phone_number?: string
-  location?: any
-  avatar_url?: string
-}
-
-export interface CreateTradeData {
-  receiver_id: string
-  target_listing_id: number
-  message?: string
-  proposer_items: any[]
-  estimated_value: number
-}
-
-export interface Favorite {
-  id: number
-  user_id: string
-  listing_id: number
-  created_at: string
-}
-
-export interface Conversation {
-  id: string
-  participants: string[]
-  listing_id: number | null
-  trade_id: string | null
-  last_message_id: string | null
-  last_message_time: string | null
-  is_active: boolean
-  metadata: any | null
-  created_at: string
-  updated_at: string
-  // Joined data
-  messages?: Message[]
-  listing?: Listing
-  trade?: Trade
-  other_participant?: Profile
-}
-
-export interface Message {
-  id: string
-  conversation_id: string
-  sender_id: string
-  content: string
-  message_type: 'text' | 'image' | 'file' | 'trade_offer' | 'system'
-  media_url: string | null
-  attachments: string[]
-  is_read: boolean
-  is_system_message: boolean
-  reply_to: string | null
-  metadata: any | null
-  created_at: string
-  updated_at: string
-  // Joined data
-  sender?: Profile
-}
-
-export interface Trade {
-  id: string
-  proposer_id: string
-  receiver_id: string
-  status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled' | 'expired'
-  message: string | null
-  proposer_items: any
-  receiver_items: any | null
-  meeting_location: string | null
-  meeting_time: string | null
-  completion_code: string | null
-  rejection_reason: string | null
-  metadata: any | null
-  created_at: string
-  updated_at: string
-  completed_at: string | null
-  // Joined data
-  proposer?: Profile
-  receiver?: Profile
   trade_items?: TradeItem[]
   conversation?: Conversation
 }
@@ -283,6 +142,43 @@ export interface TradeItem {
   // Joined data
   listing?: Listing
   owner?: Profile
+}
+
+export interface Conversation {
+  id: string
+  participants: string[]
+  listing_id: number | null
+  trade_id: string | null
+  last_message_id?: string | null
+  last_message_at?: string
+  last_message_time?: string | null
+  is_active?: boolean
+  metadata: any | null
+  created_at: string
+  updated_at: string
+  // Joined data
+  listing?: Listing
+  trade?: Trade
+  messages?: Message[]
+  other_participant?: Profile
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string
+  message_type: 'text' | 'image' | 'file' | 'trade_offer' | 'system'
+  media_url?: string | null
+  attachments?: string[]
+  is_read: boolean
+  is_system_message?: boolean
+  reply_to?: string | null
+  metadata: any | null
+  created_at: string
+  updated_at?: string
+  // Joined data
+  sender?: Profile
 }
 
 export interface Rating {
@@ -349,6 +245,15 @@ export interface TimeBankingTransaction {
   user?: Profile
   related_request?: TimeBankingRequest
   related_user?: Profile
+}
+
+export interface Favorite {
+  id: string
+  user_id: string
+  listing_id: number
+  created_at: string
+  // Joined data
+  listing?: Listing
 }
 
 // Utility types

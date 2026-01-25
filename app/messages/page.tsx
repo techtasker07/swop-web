@@ -31,7 +31,7 @@ export default async function MessagesPage() {
 
   // Get other participants' profiles
   const participantIds = conversations?.flatMap(conv => 
-    conv.participants.filter(id => id !== user.id)
+    conv.participants.filter((id: string) => id !== user.id)
   ) || []
 
   const { data: participants } = await supabase
