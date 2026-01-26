@@ -31,25 +31,32 @@ export async function generateMetadata({ params }: ListingPageProps) {
 export default async function ListingPage({ params, searchParams }: ListingPageProps) {
   const supabase = await createClient()
   
+  // Fetch the listing with all related data
   const { data: listing, error } = await supabase
     .from("listings")
     .select(`
       *,
       seller:profiles!seller_id(*),
-      listing_images(url, is_primary, sort_order, alt_text),
-      _count:favorites(count)
+      listing_images(url, is_primary, sort_order, alt_text)
     `)
     .eq("id", parseInt(params.id))
     .single()
 
   if (error || !listing) {
+    console.error('Error fetching listing:', error)
     notFound()
   }
+
+  // Get favorite count
+  const { count: favoriteCount } = await supabase
+    .from("favorites")
+    .select("*", { count: 'exact', head: true })
+    .eq("listing_id", parseInt(params.id))
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Increment view count (only if not the owner)
+  // Increment view count (only if not the owner and user is logged in)
   if (user && user.id !== listing.seller_id) {
     await supabase
       .from("listings")
@@ -59,7 +66,10 @@ export default async function ListingPage({ params, searchParams }: ListingPageP
 
   return (
     <ListingDetails 
-      listing={listing} 
+      listing={{
+        ...listing,
+        _count: { favorites: favoriteCount || 0 }
+      }} 
       user={user}
       initialAction={searchParams.action}
     />

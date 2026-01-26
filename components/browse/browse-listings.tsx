@@ -41,8 +41,7 @@ export async function BrowseListings({
         average_rating,
         total_ratings
       ),
-      listing_images(url, is_primary, sort_order),
-      _count:favorites(count)
+      listing_images(url, is_primary, sort_order)
     `)
     .eq("is_available", true)
 

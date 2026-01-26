@@ -143,7 +143,7 @@ function ListingCard({ listing }: { listing: any }) {
   const primaryImage = listing.listing_images?.find((img: any) => img.is_primary) || listing.listing_images?.[0]
 
   return (
-    <Link href={`/dashboard/listings/${listing.id}`}>
+    <Link href={`/listings/${listing.id}`}>
       <div className="group cursor-pointer rounded-lg border border-border bg-card p-4 transition-all hover:shadow-md">
         <div className="aspect-square relative mb-3 overflow-hidden rounded-md bg-muted">
           {primaryImage ? (
@@ -172,7 +172,7 @@ function ListingCard({ listing }: { listing: any }) {
           
           {listing.price > 0 && (
             <p className="text-sm font-semibold text-emerald-600">
-              {formatCurrency(listing.price)}
+              {formatNaira(listing.price)}
             </p>
           )}
           

@@ -7,19 +7,18 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
 import { 
-  ArrowLeftIcon,
-  ArrowsRightLeftIcon,
-  HeartIcon,
-  ShareIcon,
-  MapPinIcon,
-  ClockIcon,
-  EyeIcon,
-  StarIcon,
-  ShieldCheckIcon,
-  TagIcon
-} from "@heroicons/react/24/outline"
+  ArrowLeft,
+  Heart,
+  Share2,
+  MapPin,
+  Clock,
+  Eye,
+  Star,
+  ShieldCheck,
+  MessageCircle,
+  ArrowRightLeft
+} from "lucide-react"
 import { ProposeTradeDialog } from "@/components/trades/propose-trade-dialog"
 import { formatNaira } from "@/lib/utils/currency"
 import { formatDistanceToNow } from "date-fns"
@@ -50,9 +49,16 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
   const [isLoading, setIsLoading] = useState(false)
 
   const supabase = createClient()
+  
+  // Process images - prioritize listing_images, fallback to images array
   const images = listing.listing_images?.length > 0 
     ? listing.listing_images.sort((a, b) => a.sort_order - b.sort_order)
-    : listing.images?.map((url, index) => ({ url, is_primary: index === 0, sort_order: index })) || []
+    : listing.images?.map((url, index) => ({ 
+        url, 
+        is_primary: index === 0, 
+        sort_order: index, 
+        alt_text: null 
+      })) || []
 
   useEffect(() => {
     if (user) {
@@ -132,6 +138,21 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
     setShowTradeDialog(true)
   }
 
+  const handleMessageClick = () => {
+    if (!user) {
+      toast.error('Please sign in to message sellers')
+      return
+    }
+    
+    if (user.id === listing.seller_id) {
+      toast.error("You cannot message yourself!")
+      return
+    }
+    
+    // Navigate to messages with listing context
+    window.location.href = `/messages/new?listing=${listing.id}&seller=${listing.seller_id}`
+  }
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -158,19 +179,19 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Back Button */}
         <Button variant="ghost" asChild className="mb-6">
           <Link href="/browse">
-            <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Back to Listings
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Browse
           </Link>
         </Button>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Images */}
+          {/* Images Section */}
           <div className="space-y-4">
-            <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
+            <div className="aspect-square relative overflow-hidden rounded-xl bg-muted">
               {images.length > 0 ? (
                 <Image
                   src={images[selectedImageIndex]?.url || "/placeholder.jpg"}
@@ -183,7 +204,7 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center">
                     <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-muted-foreground/10 flex items-center justify-center">
-                      <TagIcon className="h-8 w-8 text-muted-foreground" />
+                      <Eye className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <p className="text-muted-foreground">No image available</p>
                   </div>
@@ -191,13 +212,14 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
               )}
             </div>
             
+            {/* Image Thumbnails */}
             {images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square relative overflow-hidden rounded-md border-2 transition-colors ${
+                    className={`aspect-square relative overflow-hidden rounded-lg border-2 transition-colors ${
                       selectedImageIndex === index ? 'border-primary' : 'border-transparent'
                     }`}
                   >
@@ -213,24 +235,24 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
             )}
           </div>
 
-          {/* Details */}
+          {/* Details Section */}
           <div className="space-y-6">
             {/* Header */}
             <div>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-foreground mb-2">{listing.title}</h1>
-                  <div className="flex items-center space-x-4 text-muted-foreground">
+                  <h1 className="text-3xl font-bold text-foreground mb-3">{listing.title}</h1>
+                  <div className="flex items-center space-x-4 text-muted-foreground text-sm">
                     <div className="flex items-center space-x-1">
-                      <MapPinIcon className="h-4 w-4" />
+                      <MapPin className="h-4 w-4" />
                       <span>{listing.location}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <ClockIcon className="h-4 w-4" />
+                      <Clock className="h-4 w-4" />
                       <span>{formatDistanceToNow(new Date(listing.created_at), { addSuffix: true })}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <EyeIcon className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                       <span>{listing.view_count || 0} views</span>
                     </div>
                   </div>
@@ -243,13 +265,13 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                     onClick={handleFavoriteClick}
                     disabled={isLoading}
                   >
-                    <HeartIcon 
+                    <Heart 
                       className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} 
                     />
                     {favoriteCount}
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleShare}>
-                    <ShareIcon className="h-4 w-4" />
+                    <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -262,7 +284,7 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                   <Badge variant="outline">{listing.condition}</Badge>
                 )}
                 {listing.is_featured && (
-                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500">
+                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
                     Featured
                   </Badge>
                 )}
@@ -270,9 +292,9 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
 
               {/* Price */}
               {listing.price > 0 && (
-                <div className="mb-4">
-                  <p className="text-2xl font-bold text-emerald-600">
-                    {formatCurrency(listing.price)}
+                <div className="mb-6">
+                  <p className="text-3xl font-bold text-emerald-600">
+                    {formatNaira(listing.price)}
                   </p>
                   <p className="text-sm text-muted-foreground">Estimated value</p>
                 </div>
@@ -295,13 +317,13 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                         {listing.seller.display_name}
                       </h3>
                       {listing.seller.verification_status === 'verified' && (
-                        <ShieldCheckIcon className="h-4 w-4 text-blue-500" />
+                        <ShieldCheck className="h-4 w-4 text-blue-500" />
                       )}
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                       {listing.seller.average_rating > 0 && (
                         <div className="flex items-center space-x-1">
-                          <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                           <span>{listing.seller.average_rating.toFixed(1)}</span>
                           <span>({listing.seller.total_ratings} reviews)</span>
                         </div>
@@ -318,7 +340,7 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
               </CardContent>
             </Card>
 
-            {/* Actions */}
+            {/* Action Buttons */}
             {!isOwner && (
               <div className="flex space-x-3">
                 <Button 
@@ -326,8 +348,16 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                   className="flex-1"
                   size="lg"
                 >
-                  <ArrowsRightLeftIcon className="h-5 w-5 mr-2" />
+                  <ArrowRightLeft className="h-5 w-5 mr-2" />
                   Propose Trade
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={handleMessageClick}
+                  size="lg"
+                >
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  Message
                 </Button>
               </div>
             )}

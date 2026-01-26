@@ -21,8 +21,7 @@ export function FeaturedListings() {
           .select(`
             *,
             seller:profiles!seller_id(id, display_name, avatar_url, average_rating, verification_status),
-            listing_images(url, is_primary, sort_order),
-            _count:favorites(count)
+            listing_images(url, is_primary, sort_order)
           `)
           .eq('is_available', true)
           .order('is_featured', { ascending: false })

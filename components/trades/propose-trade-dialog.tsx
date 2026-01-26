@@ -221,7 +221,7 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                   <h4 className="font-medium text-foreground">{targetListing.title}</h4>
                   <p className="text-sm text-muted-foreground">{targetListing.location}</p>
                   <p className="text-sm font-semibold text-emerald-600">
-                    {formatCurrency(targetListing.price)}
+                    {formatNaira(targetListing.price)}
                   </p>
                 </div>
               </div>
@@ -257,7 +257,7 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                             </div>
                             <div>
                               <p className="font-medium text-sm">{item.listing.title}</p>
-                              <p className="text-xs text-emerald-600">{formatCurrency(item.listing.price)}</p>
+                              <p className="text-xs text-emerald-600">{formatNaira(item.listing.price)}</p>
                             </div>
                           </>
                         )}
@@ -268,7 +268,7 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                             </div>
                             <div>
                               <p className="font-medium text-sm">Cash</p>
-                              <p className="text-xs text-emerald-600">{formatCurrency(item.cash_amount || 0)}</p>
+                              <p className="text-xs text-emerald-600">{formatNaira(item.cash_amount || 0)}</p>
                             </div>
                           </>
                         )}
@@ -312,7 +312,7 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                           .filter(listing => !selectedItems.find(item => item.listing_id === listing.id))
                           .map((listing) => (
                             <SelectItem key={listing.id} value={listing.id.toString()}>
-                              {listing.title} - {formatCurrency(listing.price)}
+                              {listing.title} - {formatNaira(listing.price)}
                             </SelectItem>
                           ))}
                       </SelectContent>
@@ -373,18 +373,18 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Their item:</span>
-                    <span className="font-medium">{formatCurrency(targetValue)}</span>
+                    <span className="font-medium">{formatNaira(targetValue)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Your offer:</span>
-                    <span className="font-medium">{formatCurrency(proposedValue)}</span>
+                    <span className="font-medium">{formatNaira(proposedValue)}</span>
                   </div>
                   <div className="flex justify-between border-t pt-2">
                     <span className="text-muted-foreground">Difference:</span>
                     <span className={`font-medium ${
                       valueDifference > 0 ? 'text-green-600' : valueDifference < 0 ? 'text-red-600' : 'text-muted-foreground'
                     }`}>
-                      {valueDifference > 0 ? '+' : ''}{formatCurrency(Math.abs(valueDifference))}
+                      {valueDifference > 0 ? '+' : ''}{formatNaira(Math.abs(valueDifference))}
                     </span>
                   </div>
                 </div>

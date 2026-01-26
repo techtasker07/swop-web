@@ -80,6 +80,7 @@ export function ListingCard({ listing }: ListingCardProps) {
       return
     }
     
+    // Navigate to listing details page
     window.location.href = `/listings/${listing.id}?action=propose-trade`
   }
 
