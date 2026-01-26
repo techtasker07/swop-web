@@ -192,10 +192,10 @@ export function SignUpForm() {
         {/* Left side - Benefits */}
         <div className="space-y-8">
           <div>
-            <Badge variant="outline" className="mb-4 bg-gradient-to-r from-green-50 to-blue-50 text-green-700 border-green-200 hover:bg-gradient-to-r hover:from-green-100 hover:to-blue-100 transition-colors">
+            <Badge variant="outline" className="mb-4 bg-white text-green-600 border-green-300 hover:bg-green-50 transition-colors">
               Join the Community
             </Badge>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl font-bold text-green-900 mb-4">
               Start Trading Today
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -206,7 +206,7 @@ export function SignUpForm() {
 
           {/* Guest Data Preview */}
           {showGuestData && (
-            <Card className="border-green-200 bg-gradient-to-br from-green-50/80 to-green-100/50 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-green-200 bg-white shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
@@ -219,19 +219,19 @@ export function SignUpForm() {
                     <div className="space-y-1 text-sm text-green-700">
                       {guestAnalytics.totalFavorites > 0 && (
                         <p className="flex items-center gap-2">
-                          <Heart className="h-3 w-3" />
+                          <Heart className="h-3 w-3 text-green-600" />
                           {guestAnalytics.totalFavorites} favorited items
                         </p>
                       )}
                       {guestAnalytics.totalSearches > 0 && (
                         <p className="flex items-center gap-2">
-                          <MessageCircle className="h-3 w-3" />
+                          <MessageCircle className="h-3 w-3 text-blue-600" />
                           {guestAnalytics.totalSearches} recent searches
                         </p>
                       )}
                       {guestAnalytics.totalViewedListings > 0 && (
                         <p className="flex items-center gap-2">
-                          <Eye className="h-3 w-3" />
+                          <Eye className="h-3 w-3 text-green-600" />
                           {guestAnalytics.totalViewedListings} viewed listings
                         </p>
                       )}
@@ -247,9 +247,9 @@ export function SignUpForm() {
 
           {/* Benefits */}
           <div className="space-y-6">
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-red-50/50 hover:bg-red-50 transition-colors">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-100 shadow-sm">
-                <Heart className="h-6 w-6 text-red-600" />
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 shadow-sm">
+                <Heart className="h-6 w-6 text-green-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Save Favorites</h3>
@@ -259,9 +259,9 @@ export function SignUpForm() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-green-50/50 hover:bg-green-50 transition-colors">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 shadow-sm">
-                <MessageCircle className="h-6 w-6 text-green-600" />
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
+                <MessageCircle className="h-6 w-6 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Chat with Sellers</h3>
@@ -271,9 +271,9 @@ export function SignUpForm() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-purple-50/50 hover:bg-purple-50 transition-colors">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 shadow-sm">
-                <ShoppingBag className="h-6 w-6 text-purple-600" />
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 shadow-sm">
+                <ShoppingBag className="h-6 w-6 text-green-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Post Your Items</h3>
@@ -286,16 +286,16 @@ export function SignUpForm() {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
-            <div className="text-center p-3 rounded-lg bg-gray-50/50">
-              <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">10K+</div>
+            <div className="text-center p-3 rounded-lg bg-white border border-blue-200">
+              <div className="text-2xl font-bold text-blue-600">10K+</div>
               <div className="text-xs text-muted-foreground font-medium">Active Users</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-gray-50/50">
-              <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">99.9%</div>
+            <div className="text-center p-3 rounded-lg bg-white border border-green-200">
+              <div className="text-2xl font-bold text-green-600">99.9%</div>
               <div className="text-xs text-muted-foreground font-medium">Safe Trades</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-gray-50/50">
-              <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">50K+</div>
+            <div className="text-center p-3 rounded-lg bg-white border border-blue-200">
+              <div className="text-2xl font-bold text-blue-600">50K+</div>
               <div className="text-xs text-muted-foreground font-medium">Items Traded</div>
             </div>
           </div>
@@ -303,9 +303,9 @@ export function SignUpForm() {
 
         {/* Right side - Form */}
         <div>
-          <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+          <Card className="shadow-lg border border-green-200 bg-white">
             <CardHeader className="text-center pb-6 space-y-2">
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl font-bold text-green-900">
                 Create Your Account
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground">
@@ -449,7 +449,7 @@ export function SignUpForm() {
                   )}
                 </div>
 
-                <div className="flex items-start space-x-3 p-4 rounded-lg bg-gray-50/50 border border-gray-200">
+                <div className="flex items-start space-x-3 p-4 rounded-lg bg-white border border-gray-200">
                   <Checkbox
                     id="terms"
                     checked={acceptTerms}
@@ -470,7 +470,7 @@ export function SignUpForm() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
                   disabled={isLoading}
                 >
                   {isLoading ? (

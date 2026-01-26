@@ -12,7 +12,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <main className="flex-1 bg-gradient-to-br from-blue-50 via-white to-green-50">
         <div className="container mx-auto px-4 py-16">
           <Suspense fallback={<div>Loading...</div>}>
             <LoginForm />

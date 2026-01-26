@@ -120,10 +120,10 @@ export function LoginForm() {
         {/* Left side - Welcome back */}
         <div className="space-y-8">
           <div>
-            <Badge variant="outline" className="mb-4 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200 hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100 transition-colors">
+            <Badge variant="outline" className="mb-4 bg-white text-blue-600 border-blue-300 hover:bg-blue-50 transition-colors">
               Welcome Back
             </Badge>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl font-bold text-blue-900 mb-4">
               Continue Trading
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -134,7 +134,7 @@ export function LoginForm() {
 
           {/* Guest Data Preview */}
           {showGuestData && (
-            <Card className="border-blue-200 bg-gradient-to-br from-blue-50/80 to-blue-100/50 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-blue-200 bg-white shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
@@ -147,19 +147,19 @@ export function LoginForm() {
                     <div className="space-y-1 text-sm text-blue-700">
                       {guestAnalytics.totalFavorites > 0 && (
                         <p className="flex items-center gap-2">
-                          <Heart className="h-3 w-3" />
+                          <Heart className="h-3 w-3 text-green-600" />
                           {guestAnalytics.totalFavorites} favorited items
                         </p>
                       )}
                       {guestAnalytics.totalSearches > 0 && (
                         <p className="flex items-center gap-2">
-                          <MessageCircle className="h-3 w-3" />
+                          <MessageCircle className="h-3 w-3 text-blue-600" />
                           {guestAnalytics.totalSearches} recent searches
                         </p>
                       )}
                       {guestAnalytics.totalViewedListings > 0 && (
                         <p className="flex items-center gap-2">
-                          <Eye className="h-3 w-3" />
+                          <Eye className="h-3 w-3 text-green-600" />
                           {guestAnalytics.totalViewedListings} viewed listings
                         </p>
                       )}
@@ -177,19 +177,19 @@ export function LoginForm() {
           <div className="space-y-4">
             <h3 className="font-semibold text-foreground">What you can do:</h3>
             <div className="grid gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50/50 hover:bg-red-50 transition-colors">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-                  <Heart className="h-4 w-4 text-red-600" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+                  <Heart className="h-4 w-4 text-green-600" />
                 </div>
                 <span className="text-sm text-gray-700 font-medium">Access your saved favorites</span>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50/50 hover:bg-blue-50 transition-colors">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
                   <MessageCircle className="h-4 w-4 text-blue-600" />
                 </div>
                 <span className="text-sm text-gray-700 font-medium">Chat with sellers and buyers</span>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50/50 hover:bg-green-50 transition-colors">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
                   <ShoppingBag className="h-4 w-4 text-green-600" />
                 </div>
@@ -202,16 +202,16 @@ export function LoginForm() {
           <div className="pt-6 border-t border-gray-200">
             <p className="text-sm text-muted-foreground mb-4 font-medium">Trusted by the community:</p>
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-3 rounded-lg bg-gray-50/50">
-                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">10K+</div>
+              <div className="p-3 rounded-lg bg-white border border-blue-200">
+                <div className="text-2xl font-bold text-blue-600">10K+</div>
                 <div className="text-xs text-muted-foreground font-medium">Active Users</div>
               </div>
-              <div className="p-3 rounded-lg bg-gray-50/50">
-                <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">99.9%</div>
+              <div className="p-3 rounded-lg bg-white border border-green-200">
+                <div className="text-2xl font-bold text-green-600">99.9%</div>
                 <div className="text-xs text-muted-foreground font-medium">Safe Trades</div>
               </div>
-              <div className="p-3 rounded-lg bg-gray-50/50">
-                <div className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">4.9★</div>
+              <div className="p-3 rounded-lg bg-white border border-blue-200">
+                <div className="text-2xl font-bold text-blue-600">4.9★</div>
                 <div className="text-xs text-muted-foreground font-medium">User Rating</div>
               </div>
             </div>
@@ -220,9 +220,9 @@ export function LoginForm() {
 
         {/* Right side - Form */}
         <div>
-          <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+          <Card className="shadow-lg border border-blue-200 bg-white">
             <CardHeader className="text-center pb-6 space-y-2">
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl font-bold text-blue-900">
                 Sign In
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground">
@@ -312,7 +312,7 @@ export function LoginForm() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
                   disabled={isLoading}
                 >
                   {isLoading ? (
