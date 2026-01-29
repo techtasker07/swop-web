@@ -21,7 +21,7 @@ export default async function DashboardLayout({
       <DashboardSidebar user={user} />
       <div className="flex flex-1 flex-col lg:ml-64">
         <DashboardHeader user={user} />
-        <main className="flex-1 bg-secondary/30 p-6">
+        <main className="flex-1 bg-gray-50 p-6">
           {children}
         </main>
       </div>

@@ -9,7 +9,7 @@ import {
   HeartIcon,
   ArrowRightIcon
 } from "@heroicons/react/24/outline"
-import { Package } from "lucide-react"
+import { Package, Sparkles } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { formatNaira } from "@/lib/utils/currency"
@@ -109,11 +109,14 @@ export function SmartMatches({ matches, userLocation, isLoading }: SmartMatchesP
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-white shadow-lg border-0">
+      <CardHeader className="bg-blue-50 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Smart Matches</CardTitle>
-          <Button asChild variant="ghost" size="sm">
+          <CardTitle className="text-gray-800 flex items-center space-x-2">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+            <span>Smart Matches</span>
+          </CardTitle>
+          <Button asChild variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800">
             <Link href="/browse" className="flex items-center space-x-1">
               <span>View All</span>
               <ArrowRightIcon className="h-4 w-4" />
@@ -121,17 +124,17 @@ export function SmartMatches({ matches, userLocation, isLoading }: SmartMatchesP
           </Button>
         </div>
         {userLocation && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-600 mt-2">
             Based on your location: {userLocation}
           </p>
         )}
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <CardContent className="p-6">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {matches.slice(0, 6).map((match) => (
             <Link key={match.id} href={`/listings/${match.id}`}>
-              <div className="group cursor-pointer rounded-lg border border-border bg-card p-3 transition-all hover:shadow-md">
-                <div className="aspect-square relative mb-3 overflow-hidden rounded-md bg-muted">
+              <div className="group cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-lg hover:bg-white hover:border-blue-200">
+                <div className="aspect-square relative mb-4 overflow-hidden rounded-xl bg-gray-100">
                   {match.images.length > 0 ? (
                     <Image
                       src={match.images[0]}
@@ -141,39 +144,39 @@ export function SmartMatches({ matches, userLocation, isLoading }: SmartMatchesP
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <Package className="h-8 w-8 text-muted-foreground" />
+                      <Package className="h-12 w-12 text-gray-400" />
                     </div>
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="font-medium text-sm text-foreground line-clamp-2 group-hover:text-primary">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
                     {match.title}
                   </h3>
                   
                   {match.price > 0 && (
-                    <p className="text-sm font-semibold text-emerald-600">
+                    <p className="text-lg font-bold text-green-600">
                       {formatNaira(match.price)}
                     </p>
                   )}
                   
-                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                    <MapPinIcon className="h-3 w-3" />
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <MapPinIcon className="h-4 w-4" />
                     <span className="truncate">{match.location}</span>
                   </div>
                   
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-3 text-gray-500">
                       <div className="flex items-center space-x-1">
-                        <EyeIcon className="h-3 w-3" />
+                        <EyeIcon className="h-4 w-4" />
                         <span>{match.view_count}</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <HeartIcon className="h-3 w-3" />
+                        <HeartIcon className="h-4 w-4" />
                         <span>{match.favorite_count}</span>
                       </div>
                     </div>
-                    <span className="truncate">{match.seller.display_name}</span>
+                    <span className="text-gray-600 font-medium truncate">{match.seller.display_name}</span>
                   </div>
                 </div>
               </div>

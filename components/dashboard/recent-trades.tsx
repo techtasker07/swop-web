@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { 
-  ArrowRightIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ExclamationCircleIcon
-} from "@heroicons/react/24/outline"
+  ArrowRight,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Activity
+} from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 
@@ -31,22 +32,22 @@ export function RecentTrades({ trades }: RecentTradesProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+        return <CheckCircle className="h-5 w-5 text-green-600" />
       case 'accepted':
-        return <CheckCircleIcon className="h-4 w-4 text-blue-600" />
+        return <CheckCircle className="h-5 w-5 text-blue-600" />
       case 'pending':
-        return <ClockIcon className="h-4 w-4 text-orange-600" />
+        return <Clock className="h-5 w-5 text-orange-600" />
       case 'rejected':
-        return <XCircleIcon className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-5 w-5 text-red-600" />
       default:
-        return <ExclamationCircleIcon className="h-4 w-4 text-gray-600" />
+        return <AlertCircle className="h-5 w-5 text-gray-600" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200'
+        return 'bg-green-100 text-green-800 border-green-200'
       case 'accepted':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'pending':
@@ -59,48 +60,51 @@ export function RecentTrades({ trades }: RecentTradesProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-white shadow-lg border-0">
+      <CardHeader className="bg-green-50 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Recent Trades</CardTitle>
-          <Button asChild variant="ghost" size="sm">
+          <CardTitle className="text-gray-800 flex items-center space-x-2">
+            <Activity className="w-5 h-5 text-green-600" />
+            <span>Recent Trades</span>
+          </CardTitle>
+          <Button asChild variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800">
             <Link href="/dashboard/trades" className="flex items-center space-x-1">
               <span>View All</span>
-              <ArrowRightIcon className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+      <CardContent className="p-6">
+        <div className="space-y-4">
           {trades.slice(0, 5).map((trade) => (
             <Link key={trade.id} href={`/dashboard/trades/${trade.id}`}>
-              <div className="group cursor-pointer rounded-lg border border-border bg-card p-3 transition-all hover:shadow-sm hover:border-primary/20">
+              <div className="group cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-md hover:bg-white hover:border-blue-200">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
+                    <div className="flex items-center space-x-3 mb-2">
                       {getStatusIcon(trade.status)}
-                      <h3 className="font-medium text-sm text-foreground truncate group-hover:text-primary">
+                      <h3 className="font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors">
                         {trade.item}
                       </h3>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      with {trade.with}
+                    <p className="text-sm text-gray-600">
+                      Trading with {trade.with}
                     </p>
                   </div>
                   
-                  <div className="flex flex-col items-end space-y-1">
+                  <div className="flex flex-col items-end space-y-2">
                     <Badge 
                       variant="outline" 
-                      className={`text-xs ${getStatusColor(trade.status)}`}
+                      className={`text-xs font-medium ${getStatusColor(trade.status)}`}
                     >
-                      {trade.status}
+                      {trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
                     </Badge>
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-1 text-xs text-gray-500">
                       <span>
                         {formatDistanceToNow(new Date(trade.created_at), { addSuffix: true })}
                       </span>
-                      <ArrowRightIcon className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 </div>
