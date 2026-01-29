@@ -28,10 +28,10 @@ export function HowItWorksSection() {
     <section className="bg-background py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-2xl">
             How Swopify Works
           </h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
+          <p className="mx-auto max-w-xl text-muted-foreground">
             Trading on Swopify is simple and secure. Here&apos;s how you can start swapping today.
           </p>
         </div>

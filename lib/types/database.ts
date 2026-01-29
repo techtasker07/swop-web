@@ -28,10 +28,11 @@ export interface Profile {
   business_name: string | null
   business_type: string | null
   business_description: string | null
-  business_logo_url: string | null
-  business_banner_url: string | null
+  logo_url: string | null
+  banner_url: string | null
   business_website: string | null
   business_phone: string | null
+  business_email: string | null
   year_established: number | null
   verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
   metadata: any | null
@@ -307,8 +308,8 @@ export interface UpdateProfileData {
   business_name?: string
   business_type?: string
   business_description?: string
-  business_logo_url?: string
-  business_banner_url?: string
+  logo_url?: string
+  banner_url?: string
   business_website?: string
   business_phone?: string
   year_established?: number

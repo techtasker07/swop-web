@@ -2,6 +2,7 @@ import { createClient } from './client'
 import type { 
   Profile, 
   Listing, 
+  ListingImage,
   Category, 
   Trade, 
   Conversation, 
@@ -417,6 +418,204 @@ export async function uploadFile(file: File, bucket: string, path: string) {
     .getPublicUrl(path)
 
   return publicUrl
+}
+
+// B2B Methods - Get current user's own business listings
+export async function getB2BListings({
+  category,
+  search,
+  sort = 'recent',
+  limit = 20,
+  offset = 0
+}: {
+  category?: string
+  search?: string
+  sort?: string
+  limit?: number
+  offset?: number
+} = {}) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      console.log('No authenticated user for B2B listings')
+      return []
+    }
+
+    // Define business-specific categories
+    const businessCategories = [
+      'Professional Services',
+      'Technology Services', 
+      'Marketing & Advertising',
+      'Construction & Trades',
+      'Business Equipment',
+      'Office Equipment',
+      'Logistics & Transportation',
+      'Financial Services',
+      'Manufacturing & Production',
+      'Training & Education',
+      'Health & Safety',
+      'Consulting',
+      'Legal Services',
+      'Accounting',
+      'IT Services',
+      'Business Consulting'
+    ]
+
+    let query = supabase
+      .from('listings')
+      .select(`
+        *,
+        seller:profiles!seller_id(
+          id, 
+          display_name, 
+          avatar_url, 
+          user_type, 
+          business_name, 
+          business_type, 
+          business_description,
+          verification_status,
+          logo_url,
+          banner_url,
+          average_rating
+        ),
+        listing_images(id, listing_id, url, alt_text, is_primary, sort_order, created_at)
+      `)
+      .eq('is_available', true)
+      .eq('seller_id', user.id) // Only get current user's listings
+
+    if (category && category !== 'all') {
+      query = query.eq('category', category)
+    } else {
+      // Filter by business categories if no specific category is selected
+      query = query.in('category', businessCategories)
+    }
+
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`)
+    }
+
+    // Apply sorting
+    switch (sort) {
+      case 'price_asc':
+        query = query.order('price', { ascending: true })
+        break
+      case 'price_desc':
+        query = query.order('price', { ascending: false })
+        break
+      case 'featured':
+        query = query.order('is_featured', { ascending: false }).order('created_at', { ascending: false })
+        break
+      default:
+        query = query.order('created_at', { ascending: false })
+    }
+
+    const { data, error } = await query.range(offset, offset + limit - 1)
+
+    if (error) {
+      console.error('Error fetching B2B listings:', error)
+      return []
+    }
+    
+    // Ensure the user is a business user (additional safety check)
+    const userBusinessListings = (data || []).filter(listing => 
+      listing.seller && listing.seller.user_type === 'business'
+    )
+    
+    return userBusinessListings as (Listing & { 
+      seller: Profile
+      listing_images: ListingImage[]
+    })[]
+  } catch (error) {
+    console.error('Error in getB2BListings:', error)
+    return []
+  }
+}
+
+export async function getBusinessProfile(businessId: string) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', businessId)
+    .eq('user_type', 'business')
+    .single()
+
+  if (error) throw error
+  return data as Profile
+}
+
+export async function getBusinessListings(businessId: string) {
+  const { data, error } = await supabase
+    .from('listings')
+    .select(`
+      *,
+      listing_images(url, is_primary, sort_order),
+      _count:favorites(count)
+    `)
+    .eq('seller_id', businessId)
+    .eq('is_available', true)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data as (Listing & { 
+    listing_images: { url: string; is_primary: boolean; sort_order: number }[]
+    _count: { favorites: number }
+  })[]
+}
+
+export async function hasBusinessProfile(userId?: string) {
+  const { data: { user } } = await supabase.auth.getUser()
+  const targetUserId = userId || user?.id
+  if (!targetUserId) return false
+
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', targetUserId)
+      .single()
+
+    if (error) {
+      console.error('Error checking business profile:', error)
+      return false
+    }
+
+    return profile?.user_type === 'business'
+  } catch (error) {
+    console.error('Error checking business profile:', error)
+    return false
+  }
+}
+
+export async function createBusinessProfile(data: {
+  business_name: string
+  business_type: string
+  business_description: string
+  year_established?: number
+  business_website?: string
+  business_phone?: string
+}) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .update({
+      user_type: 'business',
+      business_name: data.business_name,
+      business_type: data.business_type,
+      business_description: data.business_description,
+      year_established: data.year_established,
+      business_website: data.business_website,
+      business_phone: data.business_phone,
+      verification_status: 'unverified',
+      kyc_verified: true
+    })
+    .eq('id', user.id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return profile as Profile
 }
 
 // Search

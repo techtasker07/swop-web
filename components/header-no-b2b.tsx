@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 
-export function Header() {
+export function HeaderNoB2B() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -94,20 +94,6 @@ export function Header() {
           <Link href="/categories" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Categories
           </Link>
-          {user && (
-            <Link 
-              href="/b2b" 
-              className="relative group text-sm font-semibold text-transparent bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 bg-clip-text transition-all duration-300 hover:from-yellow-200 hover:via-yellow-300 hover:to-yellow-400 animate-pulse"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                B2B
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-blue-900 text-xs font-bold px-1.5 py-0.5 rounded-full animate-bounce">
-                  B2B
-                </span>
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-yellow-500/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 animate-pulse"></div>
-            </Link>
-          )}
           <Link href="/how-it-works" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             How It Works
           </Link>
@@ -187,18 +173,6 @@ export function Header() {
             <Link href="/categories" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Categories
             </Link>
-            {user && (
-              <Link 
-                href="/b2b" 
-                className="text-sm font-semibold text-transparent bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 bg-clip-text flex items-center gap-2" 
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm8-2a2 2 0 100 4 2 2 0 000-4z" clipRule="evenodd" />
-                </svg>
-                B2B Trades PRO
-              </Link>
-            )}
             <Link href="/how-it-works" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               How It Works
             </Link>

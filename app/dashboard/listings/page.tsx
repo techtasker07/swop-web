@@ -140,7 +140,11 @@ export default async function MyListingsPage() {
 }
 
 function ListingCard({ listing }: { listing: any }) {
-  const primaryImage = listing.listing_images?.find((img: any) => img.is_primary) || listing.listing_images?.[0]
+  // Get primary image with proper fallback logic (consistent with main ListingCard)
+  const primaryImage = listing.listing_images?.find((img: any) => img.is_primary)?.url || 
+                      listing.listing_images?.[0]?.url || 
+                      listing.images?.[0] || 
+                      null
 
   return (
     <Link href={`/listings/${listing.id}`}>
@@ -148,10 +152,11 @@ function ListingCard({ listing }: { listing: any }) {
         <div className="aspect-square relative mb-3 overflow-hidden rounded-md bg-muted">
           {primaryImage ? (
             <Image
-              src={primaryImage.url}
+              src={primaryImage}
               alt={listing.title}
               fill
               className="object-cover transition-transform group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
             <div className="flex h-full items-center justify-center">

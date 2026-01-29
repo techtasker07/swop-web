@@ -26,8 +26,9 @@ export function QuickActions() {
     {
       icon: BuildingOfficeIcon,
       label: 'B2B Market',
-      href: '/browse?type=business',
-      color: 'bg-blue-600 hover:bg-blue-700',
+      href: '/b2b',
+      color: 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700',
+      badge: 'PRO',
     },
     {
       icon: ClockIcon,
