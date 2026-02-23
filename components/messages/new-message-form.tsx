@@ -115,7 +115,7 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
               <div>
                 <h3 className="font-medium text-foreground">{recipient.display_name}</h3>
                 {recipient.verification_status === 'verified' && (
-                  <p className="text-sm text-blue-600">Verified User</p>
+                  <p className="text-sm text-[#32cd32]">Verified User</p>
                 )}
               </div>
             </div>

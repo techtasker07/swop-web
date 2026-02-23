@@ -122,25 +122,25 @@ export async function BrowseListings({
 
 function ListingsHeader({ count }: { count: number }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <h2 className="text-xl font-semibold text-foreground">
-          {count} listing{count !== 1 ? "s" : ""} found
+    <div className="flex items-center justify-between mb-4 sm:mb-6">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-foreground">
+          {count} {count !== 1 ? "listings" : "listing"}
         </h2>
         {count > 0 && (
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            {count} results
+          <Badge variant="secondary" className="bg-[#32cd32]/10 text-[#32cd32] text-xs sm:text-sm">
+            {count}
           </Badge>
         )}
       </div>
       
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" className="hidden sm:flex">
-          <Grid className="h-4 w-4 mr-2" />
+      <div className="flex items-center gap-1 sm:gap-2">
+        <Button variant="outline" size="sm" className="hidden sm:flex bg-white hover:bg-gray-50 text-xs sm:text-sm">
+          <Grid className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Grid
         </Button>
-        <Button variant="ghost" size="sm" className="hidden sm:flex">
-          <List className="h-4 w-4 mr-2" />
+        <Button variant="ghost" size="sm" className="hidden md:flex text-xs sm:text-sm">
+          <List className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           List
         </Button>
       </div>
@@ -150,7 +150,7 @@ function ListingsHeader({ count }: { count: number }) {
 
 function ListingsGrid({ listings }: { listings: any[] }) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
       {listings.map((listing) => (
         <ListingCard key={listing.id} listing={listing} />
       ))}
@@ -160,20 +160,20 @@ function ListingsGrid({ listings }: { listings: any[] }) {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card p-12 text-center">
-      <div className="mb-4 rounded-full bg-secondary p-4">
-        <Package className="h-8 w-8 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-white p-8 sm:p-12 text-center">
+      <div className="mb-3 sm:mb-4 rounded-full bg-gray-100 p-3 sm:p-4">
+        <Package className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
       </div>
-      <h3 className="mb-2 text-xl font-semibold text-foreground">No listings found</h3>
-      <p className="mb-6 text-sm text-muted-foreground max-w-md">
+      <h3 className="mb-2 text-lg sm:text-xl font-semibold text-foreground">No listings found</h3>
+      <p className="mb-4 sm:mb-6 text-xs sm:text-sm text-muted-foreground max-w-md px-4">
         We couldn't find any listings matching your criteria. Try adjusting your filters or search query.
       </p>
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button variant="outline" onClick={() => window.location.href = '/browse'}>
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+        <Button variant="outline" onClick={() => window.location.href = '/browse'} className="w-full sm:w-auto">
           <Filter className="h-4 w-4 mr-2" />
           Clear Filters
         </Button>
-        <Button onClick={() => window.location.href = '/listings/new'}>
+        <Button onClick={() => window.location.href = '/listings/new'} className="bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#084040] hover:to-[#073232] w-full sm:w-auto">
           <Package className="h-4 w-4 mr-2" />
           Post a Listing
         </Button>

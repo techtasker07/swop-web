@@ -19,6 +19,11 @@ export interface Profile {
   barter_score: number
   gift_cards: number
   time_credits: number
+  // Trade Coin fields
+  trade_coin_balance: number
+  trade_coin_stc: number
+  trade_coin_dtc: number
+  trade_coin_gtc: number
   is_premium: boolean
   premium_expires_at: string | null
   average_rating: number
@@ -116,6 +121,9 @@ export interface Trade {
   completion_notes?: string | null
   completion_code?: string | null
   rejection_reason?: string | null
+  // Trade Coin fields
+  involves_trade_coins: boolean
+  trade_coin_escrow_id: string | null
   metadata: any | null
   created_at: string
   updated_at: string
@@ -255,6 +263,72 @@ export interface Favorite {
   created_at: string
   // Joined data
   listing?: Listing
+}
+
+// Trade Coin types
+export interface TradeCoinPricing {
+  id: number
+  coin_type: 'STC' | 'DTC' | 'GTC'
+  coin_name: string
+  base_price_per_hour: number
+  trade_fee: number
+  is_active: boolean
+  description: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface TradeCoinOrder {
+  id: string
+  user_id: string
+  order_type: 'buy' | 'sell'
+  coin_type: 'STC' | 'DTC' | 'GTC'
+  hours: number
+  price_per_hour: number
+  trade_fee: number
+  total_amount: number
+  trade_coins: number
+  status: 'pending' | 'completed' | 'failed' | 'cancelled'
+  payment_method: string | null
+  payment_reference: string | null
+  created_at: string
+  updated_at: string
+  completed_at: string | null
+}
+
+export interface TradeCoinTransaction {
+  id: number
+  user_id: string
+  transaction_type: 'earned' | 'spent' | 'purchased' | 'sold' | 'transfer_in' | 'transfer_out'
+  coin_type: 'STC' | 'DTC' | 'GTC'
+  amount: number
+  naira_value: number | null
+  order_id: string | null
+  description: string
+  metadata: any | null
+  created_at: string
+}
+
+export interface TradeCoinEscrow {
+  id: string
+  trade_id: string
+  from_user_id: string
+  to_user_id: string
+  coin_type: 'STC' | 'DTC' | 'GTC'
+  amount: number
+  status: 'held' | 'released' | 'refunded'
+  held_at: string
+  released_at: string | null
+  refunded_at: string | null
+  created_at: string
+}
+
+export interface TradeCoinBalance {
+  total_balance: number
+  stc_balance: number
+  dtc_balance: number
+  gtc_balance: number
 }
 
 // Utility types

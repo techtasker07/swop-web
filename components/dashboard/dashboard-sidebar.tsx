@@ -37,7 +37,7 @@ const quickActions = [
     href: "/dashboard/listings/new",
     label: "Create Listing",
     icon: PlusCircle,
-    color: "bg-blue-600 hover:bg-blue-700",
+    color: "bg-[#32cd32] hover:bg-[#28a428]",
     primary: true
   },
   {
@@ -51,7 +51,7 @@ const quickActions = [
     href: "/b2b",
     label: "B2B Market",
     icon: Building,
-    color: "bg-blue-600 hover:bg-blue-700",
+    color: "bg-[#073232] hover:bg-[#073232]/90",
     primary: true
   },
   {
@@ -99,7 +99,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         {/* Header */}
         <div className="flex h-16 items-center border-b border-gray-200 px-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="relative h-8 w-8 rounded-lg overflow-hidden bg-blue-500 p-1">
+            <div className="relative h-8 w-8 rounded-lg overflow-hidden bg-[#32cd32] p-1">
               <Image
                 src="/swopify.png"
                 alt="Swopify Logo"
@@ -127,7 +127,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive 
-                      ? "bg-blue-600 text-white shadow-md" 
+                      ? "bg-[#32cd32] text-white shadow-md" 
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                   )}
                 >
@@ -141,7 +141,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           {/* Quick Actions */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 mb-3">
-              <Sparkles className="w-4 h-4 text-blue-600" />
+              <Sparkles className="w-4 h-4 text-[#32cd32]" />
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick Actions</h3>
             </div>
             
@@ -185,7 +185,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
                         <Icon className="w-4 h-4" />
                         <span className="text-sm">{action.label}</span>
                         {action.badge && (
-                          <span className="ml-auto bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs">
+                          <span className="ml-auto bg-[#32cd32]/10 text-[#32cd32] px-2 py-0.5 rounded-full text-xs">
                             {action.badge}
                           </span>
                         )}
@@ -201,7 +201,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         {/* User Section */}
         <div className="border-t border-gray-200 p-4">
           <div className="mb-4 flex items-center gap-3 px-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-sm font-medium text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#32cd32] text-sm font-medium text-white">
               {user.email?.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">

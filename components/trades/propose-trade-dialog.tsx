@@ -22,8 +22,9 @@ import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { formatNaira } from "@/lib/utils/currency"
 import Image from "next/image"
-import type { Listing, Profile } from "@/lib/types/database"
+import type { Listing, Profile, TradeCoinBalance } from "@/lib/types/database"
 import { XIcon } from "lucide-react"
+import { tradeCoinService } from "@/lib/services/trade-coin-service"
 
 interface ProposeTradeDialogProps {
   open: boolean
@@ -33,12 +34,17 @@ interface ProposeTradeDialogProps {
 }
 
 interface TradeItem {
-  type: 'listing' | 'cash' | 'service'
+  type: 'listing' | 'cash' | 'service' | 'trade_coin' | 'time_banking'
   listing_id?: number
   listing?: Listing
   cash_amount?: number
   service_description?: string
   service_hours?: number
+  // Trade Coin fields
+  coin_type?: 'STC' | 'DTC' | 'GTC'
+  trade_coin_amount?: number
+  // Time Banking fields
+  time_banking_hours?: number
 }
 
 export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: ProposeTradeDialogProps) {
@@ -51,10 +57,19 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
   const [cashAmount, setCashAmount] = useState("")
   const [serviceDescription, setServiceDescription] = useState("")
   const [serviceHours, setServiceHours] = useState("")
+  // Trade Coin state
+  const [tradeCoinBalance, setTradeCoinBalance] = useState<TradeCoinBalance | null>(null)
+  const [selectedCoinType, setSelectedCoinType] = useState<'STC' | 'DTC' | 'GTC'>('STC')
+  const [tradeCoinAmount, setTradeCoinAmount] = useState("")
+  // Time Banking state
+  const [timeBankingHours, setTimeBankingHours] = useState("")
+
+  const isService = targetListing.type === 'service'
 
   useEffect(() => {
     if (open && user) {
       fetchUserListings()
+      fetchTradeCoinBalance()
     }
   }, [open, user])
 
@@ -74,6 +89,15 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
       setUserListings(data || [])
     } catch (error) {
       console.error("Error fetching user listings:", error)
+    }
+  }
+
+  const fetchTradeCoinBalance = async () => {
+    try {
+      const balance = await tradeCoinService.getUserBalance(user.id)
+      setTradeCoinBalance(balance)
+    } catch (error) {
+      console.error("Error fetching Trade Coin balance:", error)
     }
   }
 
@@ -112,6 +136,36 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
     }
   }
 
+  const addTradeCoinItem = async () => {
+    const amount = parseInt(tradeCoinAmount)
+    if (amount > 0) {
+      // Validate balance
+      const hasBalance = await tradeCoinService.validateBalance(user.id, selectedCoinType, amount)
+      if (!hasBalance) {
+        toast.error(`Insufficient ${selectedCoinType} balance`)
+        return
+      }
+
+      setSelectedItems(prev => [...prev, {
+        type: 'trade_coin',
+        coin_type: selectedCoinType,
+        trade_coin_amount: amount
+      }])
+      setTradeCoinAmount("")
+    }
+  }
+
+  const addTimeBankingItem = () => {
+    const hours = parseInt(timeBankingHours)
+    if (hours > 0) {
+      setSelectedItems(prev => [...prev, {
+        type: 'time_banking',
+        time_banking_hours: hours
+      }])
+      setTimeBankingHours("")
+    }
+  }
+
   const removeItem = (index: number) => {
     setSelectedItems(prev => prev.filter((_, i) => i !== index))
   }
@@ -125,6 +179,13 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
       } else if (item.type === 'service') {
         // Estimate service value at ₦2000 per hour
         return total + ((item.service_hours || 0) * 2000)
+      } else if (item.type === 'trade_coin') {
+        // Estimate Trade Coin value based on type
+        const coinValue = item.coin_type === 'STC' ? 14.5 : item.coin_type === 'DTC' ? 34.5 : 54.5
+        return total + ((item.trade_coin_amount || 0) * coinValue)
+      } else if (item.type === 'time_banking') {
+        // Estimate time banking value at ₦2000 per hour
+        return total + ((item.time_banking_hours || 0) * 2000)
       }
       return total
     }, 0)
@@ -139,6 +200,10 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
     setIsLoading(true)
 
     try {
+      // Check if trade involves Trade Coins
+      const hasTradeCoin = selectedItems.some(item => item.type === 'trade_coin')
+      let escrowId = null
+
       // Create trade proposal
       const { data: trade, error: tradeError } = await supabase
         .from("trades")
@@ -150,11 +215,32 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
           status: 'pending',
           proposer_items: selectedItems,
           estimated_value: calculateTotalValue(),
+          involves_trade_coins: hasTradeCoin,
         })
         .select()
         .single()
 
       if (tradeError) throw tradeError
+
+      // If Trade Coins are involved, hold them in escrow
+      if (hasTradeCoin) {
+        const tradeCoinItem = selectedItems.find(item => item.type === 'trade_coin')
+        if (tradeCoinItem && tradeCoinItem.coin_type && tradeCoinItem.trade_coin_amount) {
+          escrowId = await tradeCoinService.holdInEscrow(
+            trade.id,
+            user.id,
+            targetListing.seller_id,
+            tradeCoinItem.coin_type,
+            tradeCoinItem.trade_coin_amount
+          )
+
+          // Update trade with escrow ID
+          await supabase
+            .from("trades")
+            .update({ trade_coin_escrow_id: escrowId })
+            .eq("id", trade.id)
+        }
+      }
 
       // Create notification for the seller
       await supabase
@@ -274,12 +360,43 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                         )}
                         {item.type === 'service' && (
                           <>
-                            <div className="h-10 w-10 rounded bg-blue-100 flex items-center justify-center">
-                              <ClockIcon className="h-5 w-5 text-blue-600" />
+                            <div className="h-10 w-10 rounded bg-[#32cd32]/10 flex items-center justify-center">
+                              <ClockIcon className="h-5 w-5 text-[#32cd32]" />
                             </div>
                             <div>
                               <p className="font-medium text-sm">{item.service_description}</p>
-                              <p className="text-xs text-blue-600">{item.service_hours}h service</p>
+                              <p className="text-xs text-[#32cd32]">{item.service_hours}h service</p>
+                            </div>
+                          </>
+                        )}
+                        {item.type === 'trade_coin' && (
+                          <>
+                            <div className={`h-10 w-10 rounded flex items-center justify-center ${
+                              item.coin_type === 'STC' ? 'bg-gray-100' :
+                              item.coin_type === 'DTC' ? 'bg-[#073232]/10' : 'bg-[#32cd32]/10'
+                            }`}>
+                              <CurrencyDollarIcon className={`h-5 w-5 ${
+                                item.coin_type === 'STC' ? 'text-gray-600' :
+                                item.coin_type === 'DTC' ? 'text-[#073232]' : 'text-[#32cd32]'
+                              }`} />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">{item.coin_type} Trade Coins</p>
+                              <p className={`text-xs ${
+                                item.coin_type === 'STC' ? 'text-gray-600' :
+                                item.coin_type === 'DTC' ? 'text-[#073232]' : 'text-[#32cd32]'
+                              }`}>{item.trade_coin_amount} TC</p>
+                            </div>
+                          </>
+                        )}
+                        {item.type === 'time_banking' && (
+                          <>
+                            <div className="h-10 w-10 rounded bg-[#32cd32]/10 flex items-center justify-center">
+                              <ClockIcon className="h-5 w-5 text-[#32cd32]" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">Time Banking</p>
+                              <p className="text-xs text-[#32cd32]">{item.time_banking_hours}h credit</p>
                             </div>
                           </>
                         )}
@@ -361,6 +478,62 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                     </div>
                   </div>
                 </div>
+
+                {/* Add Trade Coins */}
+                <div>
+                  <Label className="text-sm font-medium">Pay with Trade Coins:</Label>
+                  {tradeCoinBalance && (
+                    <div className="flex items-center space-x-2 mt-1 mb-2 text-xs text-muted-foreground">
+                      <span>Balance:</span>
+                      <span className="font-medium">STC: {tradeCoinBalance.stc_balance}</span>
+                      <span className="font-medium">DTC: {tradeCoinBalance.dtc_balance}</span>
+                      <span className="font-medium">GTC: {tradeCoinBalance.gtc_balance}</span>
+                    </div>
+                  )}
+                  <div className="space-y-2 mt-1">
+                    <Select value={selectedCoinType} onValueChange={(value: 'STC' | 'DTC' | 'GTC') => setSelectedCoinType(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="STC">Silver Trade Coin (STC)</SelectItem>
+                        <SelectItem value="DTC">Diamond Trade Coin (DTC)</SelectItem>
+                        <SelectItem value="GTC">Gold Trade Coin (GTC)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex space-x-2">
+                      <Input
+                        type="number"
+                        placeholder="Amount in TC"
+                        value={tradeCoinAmount}
+                        onChange={(e) => setTradeCoinAmount(e.target.value)}
+                        min="0"
+                      />
+                      <Button onClick={addTradeCoinItem} variant="outline" size="sm">
+                        <PlusIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add Time Banking (only for services) */}
+                {isService && (
+                  <div>
+                    <Label className="text-sm font-medium">Offer Time Banking hours:</Label>
+                    <div className="flex space-x-2 mt-1">
+                      <Input
+                        type="number"
+                        placeholder="Hours"
+                        value={timeBankingHours}
+                        onChange={(e) => setTimeBankingHours(e.target.value)}
+                        min="0"
+                      />
+                      <Button onClick={addTimeBankingItem} variant="outline" size="sm">
+                        <PlusIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -96,26 +96,26 @@ export function CategoryStats() {
   ]
 
   return (
-    <div className="mb-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mb-8 sm:mb-10 md:mb-12 grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4">
       {statCards.map((stat) => {
         const Icon = stat.icon
         return (
-          <Card key={stat.title}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 to-purple-100">
-                  <Icon className="h-6 w-6 text-blue-600" />
+          <Card key={stat.title} className="bg-white shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-gradient-to-br from-[#073232]/10 to-[#32cd32]/10">
+                  <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#073232]" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
                     {stat.title}
                   </p>
-                  <p className="text-2xl font-bold text-foreground">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
                     {loading ? "..." : stat.value.toLocaleString()}
                   </p>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
+              <p className="mt-2 sm:mt-3 text-[10px] sm:text-xs text-muted-foreground line-clamp-2">
                 {stat.description}
               </p>
             </CardContent>

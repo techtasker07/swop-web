@@ -80,8 +80,8 @@ export function HeroSection() {
           {/* Enhanced Stats */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 lg:grid-cols-4">
             <div className="flex flex-col items-center group">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <Users className="h-8 w-8 text-blue-600" />
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#32cd32]/10 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                <Users className="h-8 w-8 text-[#32cd32]" />
               </div>
               <div className="text-3xl font-bold text-foreground">10K+</div>
               <div className="text-sm text-muted-foreground font-medium">Active Traders</div>
@@ -96,8 +96,8 @@ export function HeroSection() {
               <div className="text-xs text-green-600 font-medium mt-1">Verified secure</div>
             </div>
             <div className="flex flex-col items-center group">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <Zap className="h-8 w-8 text-blue-600" />
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#073232]/10 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                <Zap className="h-8 w-8 text-[#073232]" />
               </div>
               <div className="text-3xl font-bold text-foreground">50K+</div>
               <div className="text-sm text-muted-foreground font-medium">Items Traded</div>
@@ -120,11 +120,11 @@ export function HeroSection() {
               <span>Secure Transactions</span>
             </div>
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
+              <Users className="h-4 w-4 text-[#32cd32]" />
               <span>Community Verified</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-500" />
+              <Clock className="h-4 w-4 text-[#073232]" />
               <span>24/7 Support</span>
             </div>
             <div className="flex items-center gap-2">

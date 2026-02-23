@@ -46,14 +46,16 @@ export default async function ProfilePage() {
   ]
 
   return (
-    <div className="space-y-8">
-      <ProfileHeader profile={profile} user={user} />
-      <ProfileStats profile={profile} />
-      <ProfileTabs 
-        achievements={achievements}
-        ratings={ratings || []}
-        profile={profile}
-      />
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+        <ProfileHeader profile={profile} user={user} />
+        <ProfileStats profile={profile} />
+        <ProfileTabs 
+          achievements={achievements}
+          ratings={ratings || []}
+          profile={profile}
+        />
+      </div>
     </div>
   )
 }

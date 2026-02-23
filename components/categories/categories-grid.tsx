@@ -147,24 +147,24 @@ export function CategoriesGrid() {
     
     return (
       <Link href={`/browse?category=${encodeURIComponent(category.name)}&type=${type}`}>
-        <Card className="group h-full transition-all hover:border-primary/50 hover:shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 to-green-100 group-hover:from-blue-200 group-hover:to-green-200 transition-colors">
-                <Icon className="h-6 w-6 text-blue-600" />
+        <Card className="group h-full transition-all hover:border-[#073232]/30 hover:shadow-lg bg-white">
+          <CardContent className="p-4 sm:p-5 md:p-6">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-gradient-to-br from-[#073232]/10 to-[#32cd32]/10 group-hover:from-[#073232]/20 group-hover:to-[#32cd32]/20 transition-colors flex-shrink-0">
+                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#073232]" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                <div className="flex items-start justify-between mb-1 sm:mb-2 gap-2">
+                  <h3 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-[#073232] transition-colors line-clamp-2">
                     {category.name}
                   </h3>
                   {!loading && (
-                    <Badge variant="secondary" className="ml-2">
+                    <Badge variant="secondary" className="bg-[#32cd32]/10 text-[#32cd32] text-xs flex-shrink-0">
                       {count}
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                   {category.description}
                 </p>
               </div>
@@ -176,16 +176,16 @@ export function CategoriesGrid() {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 sm:space-y-10 md:space-y-12">
       {/* Physical Items */}
       <section>
-        <div className="mb-8">
-          <h2 className="mb-2 text-2xl font-bold text-foreground">Physical Items</h2>
-          <p className="text-muted-foreground">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h2 className="mb-1 sm:mb-2 text-xl sm:text-2xl font-bold text-foreground">Physical Items</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Trade tangible items like electronics, clothing, books, and more.
           </p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {physicalCategories.map((category) => (
             <CategoryCard key={category.name} category={category} type="item" />
           ))}
@@ -194,13 +194,13 @@ export function CategoriesGrid() {
 
       {/* Services */}
       <section>
-        <div className="mb-8">
-          <h2 className="mb-2 text-2xl font-bold text-foreground">Services</h2>
-          <p className="text-muted-foreground">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h2 className="mb-1 sm:mb-2 text-xl sm:text-2xl font-bold text-foreground">Services</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Exchange skills and services with others in your community.
           </p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {serviceCategories.map((category) => (
             <CategoryCard key={category.name} category={category} type="service" />
           ))}

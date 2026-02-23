@@ -139,30 +139,13 @@ export function BrowseFilters({
   ].filter(Boolean).length
 
   return (
-    <div className="space-y-6">
-      {/* Mobile Filter Toggle */}
-      <div className="lg:hidden">
-        <Button 
-          variant="outline" 
-          className="w-full gap-2" 
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-          {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="ml-2">
-              {activeFiltersCount}
-            </Badge>
-          )}
-        </Button>
-      </div>
-
-      <div className={`space-y-6 ${isFilterOpen ? 'block' : 'hidden lg:block'}`}>
+    <div className="space-y-4 sm:space-y-6">
+      <div className={`space-y-4 sm:space-y-6`}>
         {/* Search */}
-        <Card className="shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Search className="h-5 w-5 text-primary" />
+        <Card className="shadow-sm bg-white">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Search className="h-4 w-4 sm:h-5 sm:w-5 text-[#073232]" />
               Search
             </CardTitle>
           </CardHeader>
@@ -175,10 +158,10 @@ export function BrowseFilters({
                   placeholder="Search for items, services..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-11"
+                  className="pl-9 h-10 sm:h-11"
                 />
               </div>
-              <Button type="submit" size="default" className="px-4">
+              <Button type="submit" size="default" className="px-3 sm:px-4 bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#084040] hover:to-[#073232]">
                 <Search className="h-4 w-4" />
               </Button>
             </form>
@@ -186,10 +169,10 @@ export function BrowseFilters({
         </Card>
 
         {/* Category */}
-        <Card className="shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Package className="h-5 w-5 text-primary" />
+        <Card className="shadow-sm bg-white">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-[#073232]" />
               Category
             </CardTitle>
           </CardHeader>

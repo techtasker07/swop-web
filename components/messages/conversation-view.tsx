@@ -36,7 +36,7 @@ export function ConversationView({ conversation, currentUser, participant }: Con
   }
 
   const markMessagesAsRead = async () => {
-    const unreadMessages = messages.filter(msg => 
+    const unreadMessages = messages.filter((msg: any) => 
       !msg.is_read && msg.sender_id !== currentUser.id
     )
 
@@ -44,7 +44,7 @@ export function ConversationView({ conversation, currentUser, participant }: Con
       await supabase
         .from("messages")
         .update({ is_read: true })
-        .in("id", unreadMessages.map(msg => msg.id))
+        .in("id", unreadMessages.map((msg: any) => msg.id))
     }
   }
 
@@ -72,7 +72,7 @@ export function ConversationView({ conversation, currentUser, participant }: Con
 
       if (error) throw error
 
-      setMessages(prev => [...prev, message])
+      setMessages((prev: any) => [...prev, message])
       setNewMessage("")
 
       // Update conversation last_message_at
@@ -104,7 +104,7 @@ export function ConversationView({ conversation, currentUser, participant }: Con
             <h2 className="font-medium text-foreground flex items-center space-x-2">
               <span>{participant?.display_name || "Unknown User"}</span>
               {participant?.verification_status === 'verified' && (
-                <ShieldCheckIcon className="h-4 w-4 text-blue-500" />
+                <ShieldCheckIcon className="h-4 w-4 text-[#32cd32]" />
               )}
             </h2>
             {conversation.listing && (

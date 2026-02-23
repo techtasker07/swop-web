@@ -85,22 +85,22 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       label: 'Score',
       value: stats.barter_score.toString(),
       icon: ArrowTrendingUpIcon,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-[#32cd32]',
+      bgColor: 'bg-[#32cd32]/10',
     },
     {
       label: 'Rating',
       value: stats.average_rating.toFixed(1),
       icon: StarIcon,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-[#32cd32]',
+      bgColor: 'bg-[#32cd32]/10',
     },
     {
       label: 'Reviews',
       value: stats.total_ratings.toString(),
       icon: StarIcon,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-[#073232]',
+      bgColor: 'bg-[#073232]/10',
     },
   ]
 

@@ -17,12 +17,12 @@ export function formatNaira(amount: number | string): string {
   
   if (isNaN(numAmount)) return '₦0'
   
-  // Use Nigerian locale formatting
+  // Use Nigerian locale formatting with thousand/million separators and no decimals
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   }).format(numAmount)
 }
 

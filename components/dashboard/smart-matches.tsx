@@ -110,10 +110,10 @@ export function SmartMatches({ matches, userLocation, isLoading }: SmartMatchesP
 
   return (
     <Card className="bg-white shadow-lg border-0">
-      <CardHeader className="bg-blue-50 border-b border-gray-200">
+      <CardHeader className="bg-[#32cd32]/10 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <CardTitle className="text-gray-800 flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-blue-600" />
+            <Sparkles className="w-5 h-5 text-[#32cd32]" />
             <span>Smart Matches</span>
           </CardTitle>
           <Button asChild variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800">
@@ -133,7 +133,7 @@ export function SmartMatches({ matches, userLocation, isLoading }: SmartMatchesP
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {matches.slice(0, 6).map((match) => (
             <Link key={match.id} href={`/listings/${match.id}`}>
-              <div className="group cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-lg hover:bg-white hover:border-blue-200">
+              <div className="group cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-lg hover:bg-white hover:border-[#32cd32]/30">
                 <div className="aspect-square relative mb-4 overflow-hidden rounded-xl bg-gray-100">
                   {match.images.length > 0 ? (
                     <Image
@@ -150,7 +150,7 @@ export function SmartMatches({ matches, userLocation, isLoading }: SmartMatchesP
                 </div>
                 
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="font-semibold text-gray-800 line-clamp-2 group-hover:text-[#32cd32] transition-colors">
                     {match.title}
                   </h3>
                   

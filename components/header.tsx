@@ -56,7 +56,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-blue-700 bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
+    <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-[#073232] to-[#0a4a4a] shadow-lg">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-3">
           <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-white/10 p-1">
@@ -94,6 +94,12 @@ export function Header() {
           <Link href="/categories" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Categories
           </Link>
+          <Link href="/trade-coins" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
+            Trade Coins
+          </Link>
+          <Link href="/time-banking" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
+            Time Banking
+          </Link>
           {user && (
             <Link 
               href="/b2b" 
@@ -101,7 +107,7 @@ export function Header() {
             >
               <span className="relative z-10 flex items-center gap-2">
                 B2B
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-blue-900 text-xs font-bold px-1.5 py-0.5 rounded-full animate-bounce">
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#073232] text-xs font-bold px-1.5 py-0.5 rounded-full animate-bounce">
                   B2B
                 </span>
               </span>
@@ -136,7 +142,7 @@ export function Header() {
                   <UserIcon className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="sm" className="bg-white text-blue-600 hover:bg-white/90 shadow-md">
+              <Button asChild size="sm" className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
                 <Link href="/dashboard/listings/new">
                   <ShoppingBag className="h-4 w-4 mr-2" />
                   Post Listing
@@ -148,7 +154,7 @@ export function Header() {
               <Button variant="ghost" asChild className="text-white hover:bg-white/20">
                 <Link href="/auth/login">Sign In</Link>
               </Button>
-              <Button asChild className="bg-white text-blue-600 hover:bg-white/90 shadow-md">
+              <Button asChild className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
                 <Link href="/auth/sign-up">Get Started</Link>
               </Button>
             </>
@@ -165,7 +171,7 @@ export function Header() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="border-t border-blue-500/30 bg-blue-600 px-4 py-4 md:hidden">
+        <div className="border-t border-[#32cd32]/30 bg-[#073232] px-4 py-4 md:hidden">
           {/* Mobile Search */}
           <form onSubmit={handleSearch} className="mb-4">
             <div className="relative">
@@ -186,6 +192,12 @@ export function Header() {
             </Link>
             <Link href="/categories" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Categories
+            </Link>
+            <Link href="/trade-coins" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
+              Trade Coins
+            </Link>
+            <Link href="/time-banking" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
+              Time Banking
             </Link>
             {user && (
               <Link 
@@ -225,7 +237,7 @@ export function Header() {
                   <Button variant="ghost" asChild className="justify-start text-white hover:bg-white/20">
                     <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
                   </Button>
-                  <Button asChild className="bg-white text-blue-600 hover:bg-white/90">
+                  <Button asChild className="bg-white text-[#073232] hover:bg-white/90">
                     <Link href="/dashboard/listings/new" onClick={() => setMobileMenuOpen(false)}>Post a Listing</Link>
                   </Button>
                 </>
@@ -234,7 +246,7 @@ export function Header() {
                   <Button variant="ghost" asChild className="justify-start text-white hover:bg-white/20">
                     <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
                   </Button>
-                  <Button asChild className="bg-white text-blue-600 hover:bg-white/90">
+                  <Button asChild className="bg-white text-[#073232] hover:bg-white/90">
                     <Link href="/auth/sign-up" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
                   </Button>
                 </>

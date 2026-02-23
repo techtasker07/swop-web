@@ -13,20 +13,20 @@ export default function CategoriesPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 py-16">
-          <div className="container mx-auto px-4">
+        <div className="bg-gradient-to-br from-[#073232]/5 via-[#32cd32]/5 to-[#073232]/5 py-8 sm:py-12 md:py-16">
+          <div className="container mx-auto px-3 sm:px-4 lg:px-6">
             <div className="text-center">
-              <h1 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
+              <h1 className="mb-2 sm:mb-3 md:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground lg:text-5xl">
                 Browse by Category
               </h1>
-              <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-muted-foreground px-4">
                 Find exactly what you're looking for by exploring our organized categories of items and services.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-8 sm:py-12 md:py-16">
           <CategoryStats />
           <CategoriesGrid />
         </div>

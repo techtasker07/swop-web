@@ -34,7 +34,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
       case 'completed':
         return <CheckCircle className="h-5 w-5 text-green-600" />
       case 'accepted':
-        return <CheckCircle className="h-5 w-5 text-blue-600" />
+        return <CheckCircle className="h-5 w-5 text-[#32cd32]" />
       case 'pending':
         return <Clock className="h-5 w-5 text-orange-600" />
       case 'rejected':
@@ -49,7 +49,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
       case 'completed':
         return 'bg-green-100 text-green-800 border-green-200'
       case 'accepted':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-[#32cd32]/10 text-[#32cd32] border-[#32cd32]/30'
       case 'pending':
         return 'bg-orange-100 text-orange-800 border-orange-200'
       case 'rejected':
@@ -79,12 +79,12 @@ export function RecentTrades({ trades }: RecentTradesProps) {
         <div className="space-y-4">
           {trades.slice(0, 5).map((trade) => (
             <Link key={trade.id} href={`/dashboard/trades/${trade.id}`}>
-              <div className="group cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-md hover:bg-white hover:border-blue-200">
+              <div className="group cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-md hover:bg-white hover:border-[#32cd32]/30">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-3 mb-2">
                       {getStatusIcon(trade.status)}
-                      <h3 className="font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors">
+                      <h3 className="font-semibold text-gray-800 truncate group-hover:text-[#32cd32] transition-colors">
                         {trade.item}
                       </h3>
                     </div>

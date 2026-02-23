@@ -317,7 +317,7 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                         {listing.seller.display_name}
                       </h3>
                       {listing.seller.verification_status === 'verified' && (
-                        <ShieldCheck className="h-4 w-4 text-blue-500" />
+                        <ShieldCheck className="h-4 w-4 text-[#32cd32]" />
                       )}
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
