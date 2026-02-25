@@ -62,10 +62,10 @@ export function HeroSection() {
           </form>
           
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center mb-16">
-            <Button size="lg" asChild className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg rounded-full px-8 py-4 text-lg">
-              <Link href="/browse">
-                <Globe className="mr-2 h-5 w-5" />
-                Explore Marketplace
+            <Button size="lg" asChild className="bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#0a4a4a] hover:to-[#073232] shadow-lg rounded-full px-8 py-4 text-lg">
+              <Link href="/pricing">
+                <Zap className="mr-2 h-5 w-5" />
+                Get Started
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>

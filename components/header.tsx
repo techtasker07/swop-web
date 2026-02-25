@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Heart, MessageCircle, User as UserIcon, Search, ShoppingBag } from "lucide-react"
+import { Menu, X, Heart, MessageCircle, User as UserIcon, Search, ShoppingBag, Download } from "lucide-react"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
@@ -53,6 +53,19 @@ export function Header() {
       router.push(`/browse?search=${encodeURIComponent(searchQuery.trim())}`)
       setSearchQuery("")
     }
+  }
+
+  const handleDownloadApp = () => {
+    // Replace with your actual app download URL
+    const downloadUrl = "https://swopify.co/download/swopify-app.apk"
+    
+    // Create a temporary link and trigger download
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = 'swopify-app.apk'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   return (
@@ -114,6 +127,13 @@ export function Header() {
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-yellow-500/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 animate-pulse"></div>
             </Link>
           )}
+          <button
+            onClick={handleDownloadApp}
+            className="text-sm font-medium text-white/90 transition-colors hover:text-white flex items-center gap-1.5"
+          >
+            <Download className="h-4 w-4" />
+            Download App
+          </button>
           <Link href="/how-it-works" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             How It Works
           </Link>
@@ -155,7 +175,7 @@ export function Header() {
                 <Link href="/auth/login">Sign In</Link>
               </Button>
               <Button asChild className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
-                <Link href="/auth/sign-up">Get Started</Link>
+                <Link href="/pricing">Get Started</Link>
               </Button>
             </>
           )}
@@ -211,6 +231,16 @@ export function Header() {
                 B2B Trades PRO
               </Link>
             )}
+            <button
+              onClick={() => {
+                handleDownloadApp()
+                setMobileMenuOpen(false)
+              }}
+              className="text-sm font-medium text-white/90 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download App
+            </button>
             <Link href="/how-it-works" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               How It Works
             </Link>
@@ -247,7 +277,7 @@ export function Header() {
                     <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
                   </Button>
                   <Button asChild className="bg-white text-[#073232] hover:bg-white/90">
-                    <Link href="/auth/sign-up" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                    <Link href="/pricing" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
                   </Button>
                 </>
               )}
