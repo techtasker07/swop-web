@@ -120,10 +120,10 @@ export function LoginForm() {
         {/* Left side - Welcome back */}
         <div className="space-y-8">
           <div>
-            <Badge variant="outline" className="mb-4 bg-white text-blue-600 border-blue-300 hover:bg-blue-50 transition-colors">
+            <Badge variant="outline" className="mb-4 bg-white text-[#073232] border-[#073232] hover:bg-[#073232]/5 transition-colors">
               Welcome Back
             </Badge>
-            <h1 className="text-4xl font-bold text-blue-900 mb-4">
+            <h1 className="text-4xl font-bold text-black mb-4">
               Continue Trading
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -134,37 +134,37 @@ export function LoginForm() {
 
           {/* Guest Data Preview */}
           {showGuestData && (
-            <Card className="border-blue-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-[#073232]/30 bg-white shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#073232]/10">
+                    <CheckCircle className="h-5 w-5 text-[#073232]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-blue-800 mb-2">
+                    <h3 className="font-semibold text-[#073232] mb-2">
                       Your browsing data will be synced!
                     </h3>
-                    <div className="space-y-1 text-sm text-blue-700">
+                    <div className="space-y-1 text-sm text-[#073232]">
                       {guestAnalytics.totalFavorites > 0 && (
                         <p className="flex items-center gap-2">
-                          <Heart className="h-3 w-3 text-green-600" />
+                          <Heart className="h-3 w-3 text-[#32cd32]" />
                           {guestAnalytics.totalFavorites} favorited items
                         </p>
                       )}
                       {guestAnalytics.totalSearches > 0 && (
                         <p className="flex items-center gap-2">
-                          <MessageCircle className="h-3 w-3 text-blue-600" />
+                          <MessageCircle className="h-3 w-3 text-[#073232]" />
                           {guestAnalytics.totalSearches} recent searches
                         </p>
                       )}
                       {guestAnalytics.totalViewedListings > 0 && (
                         <p className="flex items-center gap-2">
-                          <Eye className="h-3 w-3 text-green-600" />
+                          <Eye className="h-3 w-3 text-[#32cd32]" />
                           {guestAnalytics.totalViewedListings} viewed listings
                         </p>
                       )}
                     </div>
-                    <p className="text-xs text-blue-600 mt-2 font-medium">
+                    <p className="text-xs text-[#073232] mt-2 font-medium">
                       All your guest activity will be added to your account after sign in.
                     </p>
                   </div>
@@ -177,21 +177,21 @@ export function LoginForm() {
           <div className="space-y-4">
             <h3 className="font-semibold text-foreground">What you can do:</h3>
             <div className="grid gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                  <Heart className="h-4 w-4 text-green-600" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-[#32cd32]/5 transition-colors border border-[#32cd32]/30">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#32cd32]/10">
+                  <Heart className="h-4 w-4 text-[#32cd32]" />
                 </div>
                 <span className="text-sm text-gray-700 font-medium">Access your saved favorites</span>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                  <MessageCircle className="h-4 w-4 text-blue-600" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-[#073232]/5 transition-colors border border-[#073232]/30">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#073232]/10">
+                  <MessageCircle className="h-4 w-4 text-[#073232]" />
                 </div>
                 <span className="text-sm text-gray-700 font-medium">Chat with sellers and buyers</span>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                  <ShoppingBag className="h-4 w-4 text-green-600" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white hover:bg-[#32cd32]/5 transition-colors border border-[#32cd32]/30">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#32cd32]/10">
+                  <ShoppingBag className="h-4 w-4 text-[#32cd32]" />
                 </div>
                 <span className="text-sm text-gray-700 font-medium">Manage your listings</span>
               </div>
@@ -202,16 +202,16 @@ export function LoginForm() {
           <div className="pt-6 border-t border-gray-200">
             <p className="text-sm text-muted-foreground mb-4 font-medium">Trusted by the community:</p>
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-3 rounded-lg bg-white border border-blue-200">
-                <div className="text-2xl font-bold text-blue-600">10K+</div>
+              <div className="p-3 rounded-lg bg-white border border-[#073232]/30">
+                <div className="text-2xl font-bold text-[#073232]">10K+</div>
                 <div className="text-xs text-muted-foreground font-medium">Active Users</div>
               </div>
-              <div className="p-3 rounded-lg bg-white border border-green-200">
-                <div className="text-2xl font-bold text-green-600">99.9%</div>
+              <div className="p-3 rounded-lg bg-white border border-[#32cd32]/30">
+                <div className="text-2xl font-bold text-[#32cd32]">99.9%</div>
                 <div className="text-xs text-muted-foreground font-medium">Safe Trades</div>
               </div>
-              <div className="p-3 rounded-lg bg-white border border-blue-200">
-                <div className="text-2xl font-bold text-blue-600">4.9★</div>
+              <div className="p-3 rounded-lg bg-white border border-[#073232]/30">
+                <div className="text-2xl font-bold text-[#073232]">4.9★</div>
                 <div className="text-xs text-muted-foreground font-medium">User Rating</div>
               </div>
             </div>
@@ -220,9 +220,9 @@ export function LoginForm() {
 
         {/* Right side - Form */}
         <div>
-          <Card className="shadow-lg border border-blue-200 bg-white">
+          <Card className="shadow-lg border border-[#073232]/30 bg-white">
             <CardHeader className="text-center pb-6 space-y-2">
-              <CardTitle className="text-2xl font-bold text-blue-900">
+              <CardTitle className="text-2xl font-bold text-black">
                 Sign In
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground">
@@ -250,10 +250,10 @@ export function LoginForm() {
                       value={email}
                       onChange={handleEmailChange}
                       required
-                      className={`h-12 pl-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+                      className={`h-12 pl-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-[#073232]/20 ${
                         emailError 
                           ? 'border-red-300 focus:border-red-500' 
-                          : 'border-gray-200 focus:border-blue-500 hover:border-gray-300'
+                          : 'border-gray-200 focus:border-[#073232] hover:border-gray-300'
                       }`}
                       aria-describedby={emailError ? "email-error" : undefined}
                     />
@@ -278,10 +278,10 @@ export function LoginForm() {
                       value={password}
                       onChange={handlePasswordChange}
                       required
-                      className={`h-12 pl-10 pr-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+                      className={`h-12 pl-10 pr-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-[#073232]/20 ${
                         passwordError 
                           ? 'border-red-300 focus:border-red-500' 
-                          : 'border-gray-200 focus:border-blue-500 hover:border-gray-300'
+                          : 'border-gray-200 focus:border-[#073232] hover:border-gray-300'
                       }`}
                       aria-describedby={passwordError ? "password-error" : undefined}
                     />
@@ -304,7 +304,7 @@ export function LoginForm() {
                 <div className="flex items-center justify-between">
                   <Link 
                     href="/auth/forgot-password" 
-                    className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium"
+                    className="text-sm text-[#073232] hover:text-[#073232] hover:underline transition-colors font-medium"
                   >
                     Forgot password?
                   </Link>
@@ -342,7 +342,7 @@ export function LoginForm() {
                 Don't have an account?{" "}
                 <Link 
                   href="/auth/sign-up" 
-                  className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors"
+                  className="text-[#073232] hover:text-[#073232] hover:underline font-medium transition-colors"
                 >
                   Sign up for free
                 </Link>
@@ -364,3 +364,4 @@ export function LoginForm() {
     </div>
   )
 }
+

@@ -192,10 +192,10 @@ export function SignUpForm() {
         {/* Left side - Benefits */}
         <div className="space-y-8">
           <div>
-            <Badge variant="outline" className="mb-4 bg-white text-green-600 border-green-300 hover:bg-green-50 transition-colors">
+            <Badge variant="outline" className="mb-4 bg-white text-[#073232] border-[#073232] hover:bg-[#073232]/5 transition-colors">
               Join the Community
             </Badge>
-            <h1 className="text-4xl font-bold text-green-900 mb-4">
+            <h1 className="text-4xl font-bold text-black mb-4">
               Start Trading Today
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -206,37 +206,37 @@ export function SignUpForm() {
 
           {/* Guest Data Preview */}
           {showGuestData && (
-            <Card className="border-green-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-[#073232]/30 bg-white shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#073232]/10">
+                    <CheckCircle className="h-5 w-5 text-[#073232]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-green-800 mb-2">
+                    <h3 className="font-semibold text-[#073232] mb-2">
                       We'll save your browsing data!
                     </h3>
-                    <div className="space-y-1 text-sm text-green-700">
+                    <div className="space-y-1 text-sm text-[#073232]">
                       {guestAnalytics.totalFavorites > 0 && (
                         <p className="flex items-center gap-2">
-                          <Heart className="h-3 w-3 text-green-600" />
+                          <Heart className="h-3 w-3 text-[#32cd32]" />
                           {guestAnalytics.totalFavorites} favorited items
                         </p>
                       )}
                       {guestAnalytics.totalSearches > 0 && (
                         <p className="flex items-center gap-2">
-                          <MessageCircle className="h-3 w-3 text-blue-600" />
+                          <MessageCircle className="h-3 w-3 text-[#073232]" />
                           {guestAnalytics.totalSearches} recent searches
                         </p>
                       )}
                       {guestAnalytics.totalViewedListings > 0 && (
                         <p className="flex items-center gap-2">
-                          <Eye className="h-3 w-3 text-green-600" />
+                          <Eye className="h-3 w-3 text-[#32cd32]" />
                           {guestAnalytics.totalViewedListings} viewed listings
                         </p>
                       )}
                     </div>
-                    <p className="text-xs text-green-600 mt-2 font-medium">
+                    <p className="text-xs text-[#073232] mt-2 font-medium">
                       All your activity will be synced to your new account automatically.
                     </p>
                   </div>
@@ -247,9 +247,9 @@ export function SignUpForm() {
 
           {/* Benefits */}
           <div className="space-y-6">
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 shadow-sm">
-                <Heart className="h-6 w-6 text-green-600" />
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-[#073232]/5 transition-colors border border-[#073232]/30">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#073232]/10 shadow-sm">
+                <Heart className="h-6 w-6 text-[#073232]" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Save Favorites</h3>
@@ -259,9 +259,9 @@ export function SignUpForm() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-                <MessageCircle className="h-6 w-6 text-blue-600" />
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-[#073232]/5 transition-colors border border-[#073232]/30">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#073232]/10 shadow-sm">
+                <MessageCircle className="h-6 w-6 text-[#073232]" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Chat with Sellers</h3>
@@ -271,9 +271,9 @@ export function SignUpForm() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 shadow-sm">
-                <ShoppingBag className="h-6 w-6 text-green-600" />
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-white hover:bg-[#073232]/5 transition-colors border border-[#073232]/30">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#073232]/10 shadow-sm">
+                <ShoppingBag className="h-6 w-6 text-[#073232]" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Post Your Items</h3>
@@ -286,16 +286,16 @@ export function SignUpForm() {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
-            <div className="text-center p-3 rounded-lg bg-white border border-blue-200">
-              <div className="text-2xl font-bold text-blue-600">10K+</div>
+            <div className="text-center p-3 rounded-lg bg-white border border-[#073232]/30">
+              <div className="text-2xl font-bold text-[#073232]">10K+</div>
               <div className="text-xs text-muted-foreground font-medium">Active Users</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-white border border-green-200">
-              <div className="text-2xl font-bold text-green-600">99.9%</div>
+            <div className="text-center p-3 rounded-lg bg-white border border-[#32cd32]/30">
+              <div className="text-2xl font-bold text-[#32cd32]">99.9%</div>
               <div className="text-xs text-muted-foreground font-medium">Safe Trades</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-white border border-blue-200">
-              <div className="text-2xl font-bold text-blue-600">50K+</div>
+            <div className="text-center p-3 rounded-lg bg-white border border-[#073232]/30">
+              <div className="text-2xl font-bold text-[#073232]">50K+</div>
               <div className="text-xs text-muted-foreground font-medium">Items Traded</div>
             </div>
           </div>
@@ -303,9 +303,9 @@ export function SignUpForm() {
 
         {/* Right side - Form */}
         <div>
-          <Card className="shadow-lg border border-green-200 bg-white">
+          <Card className="shadow-lg border border-[#073232]/30 bg-white">
             <CardHeader className="text-center pb-6 space-y-2">
-              <CardTitle className="text-2xl font-bold text-green-900">
+              <CardTitle className="text-2xl font-bold text-black">
                 Create Your Account
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground">
@@ -333,10 +333,10 @@ export function SignUpForm() {
                       value={displayName}
                       onChange={handleDisplayNameChange}
                       required
-                      className={`h-12 pl-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+                      className={`h-12 pl-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-[#073232]/20 ${
                         displayNameError 
                           ? 'border-red-300 focus:border-red-500' 
-                          : 'border-gray-200 focus:border-blue-500 hover:border-gray-300'
+                          : 'border-gray-200 focus:border-[#073232] hover:border-gray-300'
                       }`}
                       aria-describedby={displayNameError ? "displayName-error" : undefined}
                     />
@@ -361,10 +361,10 @@ export function SignUpForm() {
                       value={email}
                       onChange={handleEmailChange}
                       required
-                      className={`h-12 pl-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+                      className={`h-12 pl-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-[#073232]/20 ${
                         emailError 
                           ? 'border-red-300 focus:border-red-500' 
-                          : 'border-gray-200 focus:border-blue-500 hover:border-gray-300'
+                          : 'border-gray-200 focus:border-[#073232] hover:border-gray-300'
                       }`}
                       aria-describedby={emailError ? "email-error" : undefined}
                     />
@@ -390,10 +390,10 @@ export function SignUpForm() {
                       onChange={handlePasswordChange}
                       required
                       minLength={6}
-                      className={`h-12 pl-10 pr-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+                      className={`h-12 pl-10 pr-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-[#073232]/20 ${
                         passwordError 
                           ? 'border-red-300 focus:border-red-500' 
-                          : 'border-gray-200 focus:border-blue-500 hover:border-gray-300'
+                          : 'border-gray-200 focus:border-[#073232] hover:border-gray-300'
                       }`}
                       aria-describedby={passwordError ? "password-error" : undefined}
                     />
@@ -426,10 +426,10 @@ export function SignUpForm() {
                       value={confirmPassword}
                       onChange={handleConfirmPasswordChange}
                       required
-                      className={`h-12 pl-10 pr-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+                      className={`h-12 pl-10 pr-10 border-2 transition-all duration-200 focus:ring-2 focus:ring-[#073232]/20 ${
                         confirmPasswordError 
                           ? 'border-red-300 focus:border-red-500' 
-                          : 'border-gray-200 focus:border-blue-500 hover:border-gray-300'
+                          : 'border-gray-200 focus:border-[#073232] hover:border-gray-300'
                       }`}
                       aria-describedby={confirmPasswordError ? "confirmPassword-error" : undefined}
                     />
@@ -458,11 +458,11 @@ export function SignUpForm() {
                   />
                   <Label htmlFor="terms" className="text-sm leading-relaxed text-gray-700">
                     I agree to the{" "}
-                    <Link href="/terms" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">
+                    <Link href="/terms" className="text-[#073232] hover:text-[#073232] hover:underline font-medium">
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">
+                    <Link href="/privacy" className="text-[#073232] hover:text-[#073232] hover:underline font-medium">
                       Privacy Policy
                     </Link>
                   </Label>
@@ -491,7 +491,7 @@ export function SignUpForm() {
                 Already have an account?{" "}
                 <Link 
                   href="/auth/login" 
-                  className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors"
+                  className="text-[#073232] hover:text-[#073232] hover:underline font-medium transition-colors"
                 >
                   Sign in here
                 </Link>
@@ -503,3 +503,4 @@ export function SignUpForm() {
     </div>
   )
 }
+
