@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Download</title>
+</head>
+<body>
+    <h1>Test APK Download</h1>
+    <p>Click the button below to test the APK download:</p>
+    <button onclick="testDownload()">Test Download APK</button>
+    
+    <script>
+        function testDownload() {
+            const downloadUrl = "/downloads/swopify-app.apk"
+            
+            // Create a temporary link and trigger download
+            const link = document.createElement('a')
+            link.href = downloadUrl
+            link.download = 'swopify-app.apk'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            
+            console.log('Download triggered for:', downloadUrl)
+        }
+    </script>
+</body>
+</html>
