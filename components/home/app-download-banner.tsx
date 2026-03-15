@@ -25,16 +25,7 @@ export function AppDownloadBanner() {
   }
 
   const handleDownload = () => {
-    // Use the local APK file from public/downloads folder
-    const downloadUrl = "/downloads/swopify-app.apk"
-    
-    // Create a temporary link and trigger download
-    const link = document.createElement('a')
-    link.href = downloadUrl
-    link.download = 'swopify-app.apk'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    window.location.href = "/download"
   }
 
   if (!isVisible) return null
