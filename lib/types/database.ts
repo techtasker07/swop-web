@@ -331,6 +331,34 @@ export interface TradeCoinBalance {
   gtc_balance: number
 }
 
+// Service Coin types
+export interface ServiceCoinPricing {
+  coin_type: 'BSC' | 'SSC' | 'GSC'
+  coin_name: string
+  base_price_per_hour: number
+  trade_fee: number
+  description: string | null
+}
+
+export interface ServiceCoinBalance {
+  bsc_balance: number
+  ssc_balance: number
+  gsc_balance: number
+}
+
+export interface ServiceCoinOrder {
+  id: string
+  user_id: string
+  coin_type: 'BSC' | 'SSC' | 'GSC'
+  order_type: 'buy' | 'sell'
+  hours: number
+  amount_naira: number
+  status: 'pending' | 'completed' | 'failed' | 'cancelled'
+  payment_reference: string | null
+  created_at: string
+  updated_at: string
+}
+
 // Utility types
 export type ListingStatus = 'active' | 'inactive' | 'in_trade' | 'completed'
 export type UserType = 'personal' | 'business'

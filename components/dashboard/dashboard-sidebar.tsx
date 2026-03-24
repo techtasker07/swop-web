@@ -69,6 +69,13 @@ const quickActions = [
     outline: true
   },
   {
+    href: "/service-coins",
+    label: "Service Coins",
+    icon: Coins,
+    color: "border-gray-200 hover:bg-gray-50 text-gray-700",
+    outline: true
+  },
+  {
     href: "/dashboard/safe-zones",
     label: "Safe Zone",
     icon: Shield,

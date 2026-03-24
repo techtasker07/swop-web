@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react"
+import { Twitter, Instagram, Mail, MapPin, Phone } from "lucide-react"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -49,40 +49,22 @@ export function Footer() {
                 <p className="text-sm font-semibold text-white/90 mb-3">Follow Us</p>
                 <div className="flex gap-3 justify-center sm:justify-start">
                   <a 
-                    href="https://facebook.com" 
+                    href="https://x.com/swopifyxchange" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="Facebook"
-                  >
-                    <Facebook className="h-4 w-4" />
-                  </a>
-                  <a 
-                    href="https://twitter.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="Twitter"
+                    aria-label="X (Twitter)"
                   >
                     <Twitter className="h-4 w-4" />
                   </a>
                   <a 
-                    href="https://instagram.com" 
+                    href="https://www.instagram.com/swopifyxchange/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
                     aria-label="Instagram"
                   >
                     <Instagram className="h-4 w-4" />
-                  </a>
-                  <a 
-                    href="https://linkedin.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
-                    aria-label="LinkedIn"
-                  >
-                    <Linkedin className="h-4 w-4" />
                   </a>
                 </div>
               </div>
@@ -100,6 +82,11 @@ export function Footer() {
                 <li>
                   <Link href="/categories" className="text-sm text-white/70 hover:text-white transition-colors inline-flex items-center group">
                     <span className="group-hover:translate-x-1 transition-transform">Categories</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/service-coins" className="text-sm text-white/70 hover:text-white transition-colors inline-flex items-center group">
+                    <span className="group-hover:translate-x-1 transition-transform">Service Coins</span>
                   </Link>
                 </li>
                 <li>

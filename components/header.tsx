@@ -110,6 +110,9 @@ export function Header() {
           <Link href="/trade-coins" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Trade Coins
           </Link>
+          <Link href="/service-coins" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
+            Service Coins
+          </Link>
           <Link href="/time-banking" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Time Banking
           </Link>
@@ -215,6 +218,9 @@ export function Header() {
             </Link>
             <Link href="/trade-coins" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Trade Coins
+            </Link>
+            <Link href="/service-coins" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
+              Service Coins
             </Link>
             <Link href="/time-banking" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Time Banking
