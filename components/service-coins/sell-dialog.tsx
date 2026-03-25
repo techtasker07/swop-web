@@ -133,9 +133,9 @@ export function SellServiceCoinDialog({ open, onOpenChange, coin, userId }: Sell
             </CardContent>
           </Card>
 
-          <Alert className="bg-amber-50 border-amber-200">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-xs text-amber-800">
+          <Alert className="bg-[#32cd32]/10 border-[#32cd32]/30">
+            <AlertCircle className="h-4 w-4 text-[#32cd32]" />
+            <AlertDescription className="text-xs text-[#073232]">
               Funds will be transferred to your Opay account within 24–48 hours
             </AlertDescription>
           </Alert>

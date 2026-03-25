@@ -53,13 +53,13 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
     <div className="space-y-6">
       <ServiceCoinWallet userId={userId} />
 
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-[#32cd32]/10 border-[#32cd32]/30">
         <CardContent className="p-4">
           <div className="flex items-start space-x-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-[#32cd32] mt-0.5 flex-shrink-0" />
             <div className="space-y-1">
-              <p className="text-sm font-medium text-blue-900">About Service Coins</p>
-              <p className="text-xs text-blue-800">
+              <p className="text-sm font-medium text-[#073232]">How Service Coins Work</p>
+              <p className="text-xs text-[#073232]/80">
                 Service Coins are used to pay for service listings on Swopify.
                 BSC (Bronze) — entry-level · SSC (Silver) — mid-tier · GSC (Gold) — premium.
                 1 hour = 100 Service Coins. A service fee applies to all transactions.
@@ -109,9 +109,9 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
 }
 
 const coinMeta = {
-  BSC: { bg: "bg-amber-50", border: "border-amber-200", badge: "bg-amber-100 text-amber-700", btn: "bg-amber-700 hover:bg-amber-800", icon: Wrench, text: "text-amber-700" },
+  BSC: { bg: "bg-[#073232]/5", border: "border-[#073232]/20", badge: "bg-[#073232]/10 text-[#073232]", btn: "bg-[#073232] hover:bg-[#073232]/90", icon: Wrench, text: "text-[#073232]" },
   SSC: { bg: "bg-gray-50", border: "border-gray-200", badge: "bg-gray-100 text-gray-700", btn: "bg-gray-600 hover:bg-gray-700", icon: Settings2, text: "text-gray-700" },
-  GSC: { bg: "bg-yellow-50", border: "border-yellow-200", badge: "bg-yellow-100 text-yellow-700", btn: "bg-yellow-600 hover:bg-yellow-700", icon: Star, text: "text-yellow-700" },
+  GSC: { bg: "bg-[#32cd32]/5", border: "border-[#32cd32]/20", badge: "bg-[#32cd32]/10 text-[#32cd32]", btn: "bg-[#32cd32] hover:bg-[#28a428]", icon: Star, text: "text-[#32cd32]" },
 }
 
 function ServiceCoinCard({ coin, action, onAction }: { coin: ServiceCoinPricing; action: "buy" | "sell"; onAction: () => void }) {
