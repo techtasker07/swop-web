@@ -79,7 +79,7 @@ export default function AccessibilityPage() {
       <DocSection title="Feedback & Support">
         <p>We welcome feedback on the accessibility of Swopify. If you encounter any barriers or have suggestions for improvement, please let us know.</p>
         <DocHighlight>
-          Email us at support@swopify.com with the subject "Accessibility Feedback". We aim to respond within 2 business days and will work with you to provide the information or functionality you need.
+          Email us at support@swopify.co with the subject "Accessibility Feedback". We aim to respond within 2 business days and will work with you to provide the information or functionality you need.
         </DocHighlight>
       </DocSection>
 

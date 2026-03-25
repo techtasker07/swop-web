@@ -75,7 +75,7 @@ export default function BlogPage() {
       </DocSection>
 
       <DocHighlight>
-        Want to share your Swopify story? Email us at support@swopify.com with the subject "Community Story" and you might be featured on our blog.
+        Want to share your Swopify story? Email us at support@swopify.co with the subject "Community Story" and you might be featured on our blog.
       </DocHighlight>
     </DocLayout>
   )

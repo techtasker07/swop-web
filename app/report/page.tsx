@@ -56,7 +56,7 @@ export default function ReportPage() {
       </DocSection>
 
       <DocSection title="Report via Email">
-        <p>If you're unable to report in-app, email us at <a href="mailto:support@swopify.com" className="text-[#073232] font-medium underline">support@swopify.com</a> with:</p>
+        <p>If you're unable to report in-app, email us at <a href="mailto:support@swopify.co" className="text-[#073232] font-medium underline">support@swopify.co</a> with:</p>
         <DocList items={[
           "Subject: 'Report: [User/Listing/Trade]'",
           "The username or listing title involved",
@@ -78,7 +78,7 @@ export default function ReportPage() {
 
       <DocSection title="Emergency Situations">
         <DocHighlight>
-          If you believe you are in immediate danger or have been a victim of a serious crime, please contact local emergency services (112 in Nigeria) first. Then report to us at support@swopify.com with subject "URGENT".
+          If you believe you are in immediate danger or have been a victim of a serious crime, please contact local emergency services (112 in Nigeria) first. Then report to us at support@swopify.co with subject "URGENT".
         </DocHighlight>
       </DocSection>
 

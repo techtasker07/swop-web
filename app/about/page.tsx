@@ -110,7 +110,7 @@ export default function AboutPage() {
 
       <DocSection title="Contact Us">
         <DocList items={[
-          "Email: support@swopify.com",
+          "Email: support@swopify.co",
           "Phone: +234 801 234 5678",
           "Location: Lagos, Nigeria",
           "Twitter: @swopifyxchange",

@@ -78,7 +78,7 @@ export default function FAQPage() {
         },
         {
           q: "What should I do if I'm scammed?",
-          a: "Report the user immediately using the in-app report feature and contact us at support@swopify.com. Do not complete any further transactions with the user. We investigate all fraud reports.",
+          a: "Report the user immediately using the in-app report feature and contact us at support@swopify.co. Do not complete any further transactions with the user. We investigate all fraud reports.",
         },
       ],
     },
@@ -143,7 +143,7 @@ export default function FAQPage() {
 
       <div className="mt-8">
         <DocHighlight>
-          Still have questions? Contact us at support@swopify.com and we'll get back to you within 24 hours.
+          Still have questions? Contact us at support@swopify.co and we'll get back to you within 24 hours.
         </DocHighlight>
       </div>
     </DocLayout>

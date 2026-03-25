@@ -11,7 +11,7 @@ export default function ContactPage() {
     <DocLayout title="Contact Us" subtitle="We'd love to hear from you. Reach out anytime." breadcrumb="Company">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
         {[
-          { icon: Mail, label: "Email", value: "support@swopify.com", href: "mailto:support@swopify.com" },
+          { icon: Mail, label: "Email", value: "support@swopify.co", href: "mailto:support@swopify.co" },
           { icon: Phone, label: "Phone", value: "+234 801 234 5678", href: "tel:+2348012345678" },
           { icon: MapPin, label: "Location", value: "Lagos, Nigeria", href: null },
           { icon: Clock, label: "Support Hours", value: "Mon–Fri, 9am–6pm WAT", href: null },
@@ -33,7 +33,7 @@ export default function ContactPage() {
       </div>
 
       <DocSection title="General Inquiries">
-        <p>For general questions about Swopify, how the platform works, or partnership opportunities, email us at <a href="mailto:support@swopify.com" className="text-[#073232] font-medium underline">support@swopify.com</a>. We typically respond within 24 hours on business days.</p>
+        <p>For general questions about Swopify, how the platform works, or partnership opportunities, email us at <a href="mailto:support@swopify.co" className="text-[#073232] font-medium underline">support@swopify.co</a>. We typically respond within 24 hours on business days.</p>
       </DocSection>
 
       <DocSection title="Technical Support">
@@ -45,7 +45,7 @@ export default function ContactPage() {
         <p>If you need to report a suspicious user or listing, please use the in-app report feature or email us with the relevant details. We take all reports seriously and investigate promptly.</p>
         <DocList items={[
           "Use the 'Report' button on any listing or profile",
-          "Email: support@swopify.com with subject 'Report: [issue]'",
+          "Email: support@swopify.co with subject 'Report: [issue]'",
           "Include screenshots or evidence where possible",
           "We aim to respond to reports within 12 hours",
         ]} />
@@ -53,7 +53,7 @@ export default function ContactPage() {
 
       <DocSection title="Business & Partnerships">
         <p>Interested in partnering with Swopify or exploring B2B opportunities? We're always open to collaborations that align with our mission of fair, sustainable exchange.</p>
-        <p>Reach out to us at <a href="mailto:support@swopify.com" className="text-[#073232] font-medium underline">support@swopify.com</a> with the subject line "Partnership Inquiry".</p>
+        <p>Reach out to us at <a href="mailto:support@swopify.co" className="text-[#073232] font-medium underline">support@swopify.co</a> with the subject line "Partnership Inquiry".</p>
       </DocSection>
 
       <DocSection title="Social Media">

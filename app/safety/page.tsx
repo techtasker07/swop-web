@@ -81,7 +81,7 @@ export default function SafetyPage() {
       </DocSection>
 
       <DocSection title="Reporting Issues">
-        <p>If you encounter suspicious behavior, report it immediately using the in-app report button on any profile or listing. You can also email us at support@swopify.com.</p>
+        <p>If you encounter suspicious behavior, report it immediately using the in-app report button on any profile or listing. You can also email us at support@swopify.co.</p>
         <DocHighlight>
           Your reports help keep the entire Swopify community safe. We investigate every report and take action within 24 hours.
         </DocHighlight>

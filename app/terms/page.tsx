@@ -28,7 +28,7 @@ export default function TermsPage() {
 
       <DocSection title="User Accounts">
         <DocSubSection title="Account Responsibility">
-          <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. Notify us immediately at support@swopify.com if you suspect unauthorized access.</p>
+          <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. Notify us immediately at support@swopify.co if you suspect unauthorized access.</p>
         </DocSubSection>
         <DocSubSection title="Account Termination">
           <p>We reserve the right to suspend or terminate accounts that violate these Terms of Service, our Community Guidelines, or applicable laws.</p>
@@ -88,7 +88,7 @@ export default function TermsPage() {
       </DocSection>
 
       <DocSection title="Contact">
-        <p>For questions about these terms, contact us at <a href="mailto:support@swopify.com" className="text-[#073232] font-medium underline">support@swopify.com</a>.</p>
+        <p>For questions about these terms, contact us at <a href="mailto:support@swopify.co" className="text-[#073232] font-medium underline">support@swopify.co</a>.</p>
       </DocSection>
     </DocLayout>
   )

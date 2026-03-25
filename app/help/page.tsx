@@ -69,7 +69,7 @@ export default function HelpPage() {
       </DocSection>
 
       <DocHighlight>
-        Can't find what you're looking for? Email us at support@swopify.com and we'll help you out within 24 hours.
+        Can't find what you're looking for? Email us at support@swopify.co and we'll help you out within 24 hours.
       </DocHighlight>
     </DocLayout>
   )

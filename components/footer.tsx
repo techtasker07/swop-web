@@ -32,7 +32,7 @@ export function Footer() {
               <div className="space-y-2 pt-2">
                 <div className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors justify-center sm:justify-start">
                   <Mail className="h-4 w-4 flex-shrink-0" />
-                  <a href="mailto:support@swopify.com">support@swopify.com</a>
+                  <a href="mailto:support@swopify.co">support@swopify.co</a>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors justify-center sm:justify-start">
                   <Phone className="h-4 w-4 flex-shrink-0" />

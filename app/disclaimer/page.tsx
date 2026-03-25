@@ -63,7 +63,7 @@ export default function DisclaimerPage() {
       </DocSection>
 
       <DocSection title="Contact">
-        <p>If you have questions about this disclaimer, contact us at <a href="mailto:support@swopify.com" className="text-[#073232] font-medium underline">support@swopify.com</a>.</p>
+        <p>If you have questions about this disclaimer, contact us at <a href="mailto:support@swopify.co" className="text-[#073232] font-medium underline">support@swopify.co</a>.</p>
       </DocSection>
     </DocLayout>
   )

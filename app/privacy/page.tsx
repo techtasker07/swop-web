@@ -75,7 +75,7 @@ export default function PrivacyPage() {
           "Portability: receive your data in a portable format",
           "Objection: object to certain types of data processing",
         ]} />
-        <p className="mt-3">To exercise these rights, contact us at support@swopify.com.</p>
+        <p className="mt-3">To exercise these rights, contact us at support@swopify.co.</p>
       </DocSection>
 
       <DocSection title="Cookies">
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
 
       <DocSection title="Contact Us">
         <DocHighlight>
-          For privacy-related questions or requests, email us at support@swopify.com with the subject "Privacy Request".
+          For privacy-related questions or requests, email us at support@swopify.co with the subject "Privacy Request".
         </DocHighlight>
       </DocSection>
     </DocLayout>

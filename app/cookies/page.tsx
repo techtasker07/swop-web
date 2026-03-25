@@ -98,7 +98,7 @@ export default function CookiesPage() {
       </DocSection>
 
       <DocHighlight>
-        For questions about our use of cookies, contact us at support@swopify.com.
+        For questions about our use of cookies, contact us at support@swopify.co.
       </DocHighlight>
     </DocLayout>
   )

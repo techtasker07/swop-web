@@ -79,7 +79,7 @@ export default function TrustSafetyPage() {
       <DocSection title="Reporting & Escalation">
         <p>If you encounter unsafe behavior, you can report it directly in the app or contact our team. We take all reports seriously.</p>
         <DocHighlight>
-          For urgent safety concerns, email support@swopify.com with the subject "URGENT SAFETY" and our team will respond within 2 hours.
+          For urgent safety concerns, email support@swopify.co with the subject "URGENT SAFETY" and our team will respond within 2 hours.
         </DocHighlight>
       </DocSection>
     </DocLayout>
