@@ -3,8 +3,8 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Heart, MessageCircle, User as UserIcon, Search, ShoppingBag, Download } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Menu, X, MessageCircle, User as UserIcon, Search, ShoppingBag, Download, ChevronDown, Coins } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [coinsOpen, setCoinsOpen] = useState(false)
+  const coinsRef = useRef<HTMLDivElement>(null)
   const [user, setUser] = useState<User | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [unreadCount, setUnreadCount] = useState(0)
@@ -104,15 +106,36 @@ export function Header() {
           <Link href="/browse" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Browse
           </Link>
-          <Link href="/categories" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
-            Categories
-          </Link>
-          <Link href="/trade-coins" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
-            Trade Coins
-          </Link>
-          <Link href="/service-coins" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
-            Service Coins
-          </Link>
+          {/* Coins dropdown */}
+          <div className="relative" ref={coinsRef}>
+            <button
+              onClick={() => setCoinsOpen(!coinsOpen)}
+              className="flex items-center gap-1 text-sm font-medium text-white/90 transition-colors hover:text-white"
+            >
+              Coins
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${coinsOpen ? "rotate-180" : ""}`} />
+            </button>
+            {coinsOpen && (
+              <div className="absolute top-full left-0 mt-2 w-44 rounded-xl bg-white shadow-lg border border-gray-100 overflow-hidden z-50">
+                <Link
+                  href="/trade-coins"
+                  className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-[#073232]/5 hover:text-[#073232] transition-colors"
+                  onClick={() => setCoinsOpen(false)}
+                >
+                  <Coins className="h-4 w-4 text-[#073232]" />
+                  Trade Coins
+                </Link>
+                <Link
+                  href="/service-coins"
+                  className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-[#073232]/5 hover:text-[#073232] transition-colors border-t border-gray-50"
+                  onClick={() => setCoinsOpen(false)}
+                >
+                  <Coins className="h-4 w-4 text-[#32cd32]" />
+                  Service Coins
+                </Link>
+              </div>
+            )}
+          </div>
           <Link href="/time-banking" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Time Banking
           </Link>
@@ -137,19 +160,11 @@ export function Header() {
             <Download className="h-4 w-4" />
             Download App
           </button>
-          <Link href="/how-it-works" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
-            How It Works
-          </Link>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <>
-              <Button variant="ghost" size="sm" asChild className="relative text-white hover:bg-white/20">
-                <Link href="/favorites">
-                  <Heart className="h-4 w-4" />
-                </Link>
-              </Button>
               <Button variant="ghost" size="sm" asChild className="relative text-white hover:bg-white/20">
                 <Link href="/messages">
                   <MessageCircle className="h-4 w-4" />
