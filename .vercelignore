@@ -1,0 +1,2 @@
+# Don't ignore APK files
+!public/downloads/*.apk

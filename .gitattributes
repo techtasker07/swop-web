@@ -1,0 +1,5 @@
+# Handle APK files as binary
+*.apk binary
+
+# Optionally use Git LFS for large APK files
+# *.apk filter=lfs diff=lfs merge=lfs -text

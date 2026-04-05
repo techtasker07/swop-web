@@ -1,11 +1,27 @@
 "use client"
 
-import { useState } from "react"
-import { Download, Smartphone, Shield, Zap, RefreshCw } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Download, Smartphone, Shield, Zap, RefreshCw, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function DownloadPage() {
   const [downloading, setDownloading] = useState(false)
+  const [versionInfo, setVersionInfo] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Fetch version info
+    fetch('/api/app-version')
+      .then(res => res.json())
+      .then(data => {
+        if (data.available) {
+          setVersionInfo(data)
+        } else {
+          setError('APK not available')
+        }
+      })
+      .catch(() => setError('Failed to check version'))
+  }, [])
 
   const handleDownload = () => {
     setDownloading(true)
@@ -61,19 +77,35 @@ export default function DownloadPage() {
           </ol>
         </div>
 
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="text-left">
+              <p className="text-red-400 text-sm font-semibold">APK Not Available</p>
+              <p className="text-red-300 text-xs mt-1">
+                The app file is currently unavailable. Please contact support.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Download button */}
         <Button
           onClick={handleDownload}
-          disabled={downloading}
-          className="w-full bg-[#32cd32] hover:bg-[#28a428] text-white font-semibold py-4 text-base rounded-xl shadow-lg"
+          disabled={downloading || !versionInfo}
+          className="w-full bg-[#32cd32] hover:bg-[#28a428] text-white font-semibold py-4 text-base rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download className="h-5 w-5 mr-2" />
           {downloading ? "Starting download..." : "Download APK"}
         </Button>
 
-        <p className="text-gray-400 text-xs">
-          Android 6.0+ required. Updates install over existing version — no data loss.
-        </p>
+        {versionInfo && (
+          <div className="text-gray-400 text-xs space-y-1">
+            <p>Version {versionInfo.version} • {versionInfo.fileSize}</p>
+            <p>Android 6.0+ required. Updates install over existing version — no data loss.</p>
+          </div>
+        )}
       </div>
     </div>
   )
