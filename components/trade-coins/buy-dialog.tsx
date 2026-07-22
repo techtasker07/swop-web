@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent } from "@/components/ui/card"
 import { tradeCoinService } from "@/lib/services/trade-coin-service"
+import { createFlutterwavePayment } from "@/lib/services/flutterwave-service"
+import { createClient } from "@/lib/supabase/client"
 import type { TradeCoinPricing } from "@/lib/types/database"
 import { formatNaira } from "@/lib/utils/currency"
 import { toast } from "sonner"
@@ -34,18 +36,18 @@ export function BuyTradeCoinDialog({ open, onOpenChange, coin, userId }: BuyTrad
       // Create buy order
       const order = await tradeCoinService.createBuyOrder(userId, coin.coin_type as 'STC' | 'DTC' | 'GTC', hours)
 
-      // In a real implementation, you would integrate with Opay payment here
-      // For now, we'll simulate a successful payment
-      const paymentReference = `PAY_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
-      // Complete the order
-      await tradeCoinService.completeBuyOrder(order.id, paymentReference)
-
-      toast.success(`Successfully purchased ${tradeCoins} ${coin.coin_type} Trade Coins!`)
-      onOpenChange(false)
-
-      // Reload the page to update balance
-      window.location.reload()
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const payment = await createFlutterwavePayment({
+        amount: total,
+        email: user?.email || "customer@swopify.app",
+        name: user?.user_metadata?.display_name || user?.email || "Swopify user",
+        description: `Buy ${coin.coin_name}`,
+        metadata: { kind: "trade_coin", order_id: order.id, coin_type: coin.coin_type, hours, user_id: userId },
+        redirectPath: "/trade-coins" as any,
+      } as any)
+      toast.success("Payment initialized. Complete checkout to receive coins.")
+      window.location.href = payment.checkout_url
     } catch (error) {
       console.error("Error buying Trade Coins:", error)
       toast.error("Failed to purchase Trade Coins. Please try again.")
@@ -160,3 +162,4 @@ export function BuyTradeCoinDialog({ open, onOpenChange, coin, userId }: BuyTrad
     </Dialog>
   )
 }
+

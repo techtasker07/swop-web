@@ -10,7 +10,8 @@ import type {
   TimeBankingRequest,
   CreateListingData,
   UpdateProfileData,
-  CreateTradeData
+  CreateTradeData,
+  Notification
 } from '@/lib/types/database'
 
 const supabase = createClient()
@@ -481,7 +482,7 @@ export async function getB2BListings({
         listing_images(id, listing_id, url, alt_text, is_primary, sort_order, created_at)
       `)
       .eq('is_available', true)
-      .eq('seller_id', user.id) // Only get current user's listings
+      // Marketplace: show available business listings from verified business users
 
     if (category && category !== 'all') {
       query = query.eq('category', category)
@@ -516,12 +517,9 @@ export async function getB2BListings({
       return []
     }
     
-    // Ensure the user is a business user (additional safety check)
-    const userBusinessListings = (data || []).filter(listing => 
-      listing.seller && listing.seller.user_type === 'business'
-    )
+    const businessListings = (data || []).filter(listing => listing.seller && listing.seller.user_type === 'business')
     
-    return userBusinessListings as (Listing & { 
+    return businessListings as (Listing & { 
       seller: Profile
       listing_images: ListingImage[]
     })[]
@@ -638,3 +636,145 @@ export async function searchListings(query: string) {
     listing_images: { url: string; is_primary: boolean; sort_order: number }[]
   })[]
 }
+// Verification helpers
+export async function getVerificationState(userId?: string) {
+  const profile = await getProfile(userId)
+  return {
+    profile,
+    personalVerified: profile.bvn_verified === true || profile.nin_verified === true,
+    businessVerified: profile.user_type === "business" && (profile.business_verified === true || profile.verification_status === "verified"),
+  }
+}
+
+export async function hasBusinessVerification(userId?: string) {
+  const { businessVerified } = await getVerificationState(userId)
+  return businessVerified
+}
+
+// Trade details and lifecycle
+export async function getTradeDetails(tradeId: string) {
+  const { data, error } = await supabase
+    .from("trades")
+    .select(`
+      *,
+      proposer:profiles!proposer_id(*),
+      receiver:profiles!receiver_id(*),
+      target_listing:listings!target_listing_id(*, listing_images(url, is_primary, sort_order))
+    `)
+    .eq("id", tradeId)
+    .single()
+
+  if (error) throw error
+  return data as Trade & { proposer: Profile; receiver: Profile; target_listing: Listing }
+}
+
+export async function setCompletionCode(tradeId: string, completionCode: string) {
+  const { data, error } = await supabase
+    .from("trades")
+    .update({ completion_code: completionCode, status: "accepted" })
+    .eq("id", tradeId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Trade
+}
+
+export async function verifyCompletionCode(tradeId: string, completionCode: string) {
+  const trade = await getTradeDetails(tradeId)
+  if (trade.completion_code !== completionCode) throw new Error("Invalid completion code")
+
+  const { data, error } = await supabase
+    .from("trades")
+    .update({ status: "completed", completed_at: new Date().toISOString() })
+    .eq("id", tradeId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Trade
+}
+
+export async function reportTrade(tradeId: string, reason: string, details?: string) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+
+  const { data, error } = await supabase
+    .from("trade_reports")
+    .insert({ trade_id: tradeId, reporter_id: user.id, reason, details, status: "open" })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// Notifications
+export async function getNotifications(limit = 50) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return data as Notification[]
+}
+
+export async function getNotification(id: number) {
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (error) throw error
+  return data as Notification
+}
+
+export async function markNotificationAsRead(id: number) {
+  const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id)
+  if (error) throw error
+}
+
+export async function markAllNotificationsAsRead() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+  const { error } = await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id).eq("is_read", false)
+  if (error) throw error
+}
+
+export async function getUnreadNotificationCount() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
+  const { count, error } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("is_read", false)
+
+  if (error) return 0
+  return count || 0
+}
+
+export async function getB2BListingDetails(id: number) {
+  const { data, error } = await supabase
+    .from("listings")
+    .select(`
+      *,
+      seller:profiles!seller_id(*),
+      listing_images(url, is_primary, sort_order)
+    `)
+    .eq("id", id)
+    .single()
+
+  if (error) throw error
+  return data as Listing & { seller: Profile; listing_images: ListingImage[] }
+}
+
+
+

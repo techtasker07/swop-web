@@ -3,13 +3,14 @@ import { createClient } from "@/lib/supabase/server"
 import { ServiceCoinMarketplace } from "@/components/service-coins/marketplace"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { CoinPaymentReturnHandler } from "@/components/trade-coins/payment-return-handler"
 
 export const metadata = {
   title: "Service Coin Marketplace | Swopify",
   description: "Buy and sell Service Coins to pay for service listings on Swopify",
 }
 
-export default async function ServiceCoinPage() {
+export default async function ServiceCoinPage({ searchParams }: { searchParams: Promise<{ payment_reference?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -29,6 +30,7 @@ export default async function ServiceCoinPage() {
                 Buy and sell Service Coins to pay for service listings when direct swaps aren&apos;t possible
               </p>
             </div>
+            {<CoinPaymentReturnHandler reference={(await searchParams).payment_reference} expectedKind="service_coin" />}
             <ServiceCoinMarketplace userId={user.id} />
           </div>
         </div>
@@ -37,3 +39,4 @@ export default async function ServiceCoinPage() {
     </div>
   )
 }
+

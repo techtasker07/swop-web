@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, User as UserIcon, Settings, LogOut } from "lucide-react"
+import { Menu, X, User as UserIcon, Settings, LogOut, Bell } from "lucide-react"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
@@ -66,6 +66,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       <div className="hidden lg:block" />
 
       <div className="flex items-center gap-3">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/notifications"><Bell className="mr-2 h-4 w-4" />Notifications</Link>
+        </Button>
         <Button variant="outline" size="sm" asChild>
           <Link href="/browse">Browse Listings</Link>
         </Button>
@@ -134,3 +137,4 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     </header>
   )
 }
+

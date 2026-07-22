@@ -1,236 +1,118 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, Sparkles, Download, UserPlus, Users, Zap, Shield, TrendingUp } from "lucide-react"
+import { Check, Crown, ShieldCheck, Sparkles } from "lucide-react"
 import { formatNaira } from "@/lib/utils/currency"
+import { allPlans, swopifyPricingService, type SwopifyPlan } from "@/lib/services/swopify-pricing-service"
+import { createFlutterwavePayment, verifyFlutterwavePayment } from "@/lib/services/flutterwave-service"
+import { useAuth } from "@/hooks/use-auth"
+import { toast } from "sonner"
 
 export function PricingPlans() {
-  const [selectedPlan, setSelectedPlan] = useState<"freemium" | "premium" | null>(null)
+  const { user, profile } = useAuth()
+  const searchParams = useSearchParams()
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
 
-  const plans = [
-    {
-      id: "freemium",
-      name: "Freemium",
-      price: 0,
-      period: "Forever Free",
-      description: "Perfect for casual traders getting started",
-      badge: "Most Popular",
-      badgeColor: "bg-[#32cd32]",
-      features: [
-        { text: "2 trades per month", icon: TrendingUp },
-        { text: "5 Trade Coins for downloading app", icon: Download },
-        { text: "5 Trade Coins for signing up", icon: UserPlus },
-        { text: "5 Trade Coins per referral", icon: Users },
-        { text: "Basic listing features", icon: Check },
-        { text: "Community support", icon: Shield },
-        { text: "Safe zone access", icon: Shield },
-      ],
-      cta: "Start Free",
-      highlight: false,
-    },
-    {
-      id: "premium",
-      name: "Premium",
-      price: 5000,
-      period: "per year",
-      description: "For serious traders who want unlimited access",
-      badge: "Best Value",
-      badgeColor: "bg-[#073232]",
-      features: [
-        { text: "Unlimited trades per month", icon: Zap },
-        { text: "50 Trade Coins for downloading app", icon: Download },
-        { text: "50 Trade Coins for signing up", icon: UserPlus },
-        { text: "50 Trade Coins per referral", icon: Users },
-        { text: "Priority listing placement", icon: Sparkles },
-        { text: "Advanced analytics", icon: TrendingUp },
-        { text: "Priority customer support", icon: Shield },
-        { text: "Exclusive premium badge", icon: Sparkles },
-        { text: "Early access to new features", icon: Zap },
-      ],
-      cta: "Go Premium",
-      highlight: true,
-    },
-  ]
+  useEffect(() => {
+    const reference = searchParams.get("payment_reference")
+    if (!reference || !user) return
+    const verify = async () => {
+      try {
+        const result = await verifyFlutterwavePayment(reference)
+        const planId = result.data?.meta?.plan_id || result.data?.meta?.planId
+        if (planId) await swopifyPricingService.activateSubscription({ userId: user.id, planId, paymentReference: reference })
+        toast.success("Subscription payment verified")
+      } catch (error: any) {
+        toast.error(error?.message || "Could not verify payment")
+      }
+    }
+    verify()
+  }, [searchParams, user])
+
+  const subscribe = async (plan: SwopifyPlan) => {
+    if (!user) {
+      window.location.href = "/auth/login?redirect=/pricing"
+      return
+    }
+    if (plan.monthlyPrice === 0) {
+      toast.success("Free plan is active for P2P users by default")
+      return
+    }
+    if (plan.monthlyPrice < 0) {
+      window.location.href = "/contact"
+      return
+    }
+
+    setLoadingPlan(plan.id)
+    try {
+      const payment = await createFlutterwavePayment({
+        amount: plan.monthlyPrice,
+        email: user.email || "customer@swopify.app",
+        name: profile?.display_name || user.email || "Swopify user",
+        phone: profile?.phone_number || undefined,
+        description: `${plan.name} Swopify subscription`,
+        metadata: { kind: "subscription", plan_id: plan.id, audience: plan.audience, user_id: user.id },
+        redirectPath: "/pricing",
+      })
+      window.location.href = payment.checkout_url
+    } catch (error: any) {
+      toast.error(error?.message || "Could not initialize payment")
+    } finally {
+      setLoadingPlan(null)
+    }
+  }
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      {/* Header */}
-      <div className="text-center mb-16">
-        <Badge variant="outline" className="mb-4 bg-white text-[#073232] border-[#073232]">
-          Choose Your Plan
-        </Badge>
-        <h1 className="text-4xl md:text-5xl font-bold text-black mb-4">
-          Start Trading Today
-        </h1>
-        <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-          Select the plan that fits your trading needs. Upgrade or downgrade anytime.
-        </p>
+    <div className="container mx-auto px-4 py-12">
+      <div className="mb-10 rounded-[2rem] bg-[#073232] p-7 text-white shadow-xl">
+        <Badge className="mb-4 rounded-full bg-[#32cd32] text-[#073232]">Swopify Pricing</Badge>
+        <h1 className="text-4xl font-bold">Choose the plan that fits your flow</h1>
+        <p className="mt-3 max-w-3xl text-white/75">The web app now uses the same P2P and B2B plans, listing limits, proposal allowances, photo limits, and payment flow as the mobile app.</p>
       </div>
 
-      {/* Pricing Cards */}
-      <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
-        {plans.map((plan) => (
-          <Card
-            key={plan.id}
-            className={`relative transition-all duration-300 ${
-              plan.highlight
-                ? "border-2 border-[#073232] shadow-2xl scale-105"
-                : "border border-gray-200 shadow-lg hover:shadow-xl"
-            } ${
-              selectedPlan === plan.id ? "ring-4 ring-[#073232]/20" : ""
-            }`}
-          >
-            {plan.badge && (
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className={`${plan.badgeColor} text-white px-4 py-1 shadow-lg`}>
-                  {plan.badge}
-                </Badge>
-              </div>
-            )}
-
-            <CardHeader className="text-center pt-8 pb-6">
-              <CardTitle className="text-2xl font-bold text-black mb-2">
-                {plan.name}
-              </CardTitle>
-              <CardDescription className="text-gray-700 mb-4">
-                {plan.description}
-              </CardDescription>
-              <div className="mt-4">
-                <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-5xl font-bold text-black">
-                    {plan.price === 0 ? "Free" : formatNaira(plan.price)}
-                  </span>
-                  {plan.price > 0 && (
-                    <span className="text-gray-700 text-sm">/{plan.period}</span>
-                  )}
-                </div>
-                {plan.price === 0 && (
-                  <p className="text-sm text-gray-700 mt-1">{plan.period}</p>
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              {/* Features List */}
-              <ul className="space-y-3">
-                {plan.features.map((feature, index) => {
-                  const Icon = feature.icon
-                  return (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                        plan.highlight ? "bg-[#073232]" : "bg-[#32cd32]"
-                      }`}>
-                        <Icon className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-black text-sm">{feature.text}</span>
-                    </li>
-                  )
-                })}
-              </ul>
-
-              {/* CTA Button */}
-              <Button
-                onClick={() => setSelectedPlan(plan.id as "freemium" | "premium")}
-                className={`w-full h-12 font-semibold transition-all duration-200 ${
-                  plan.highlight
-                    ? "bg-[#073232] hover:bg-[#0a4a4a] text-white shadow-lg"
-                    : "bg-white hover:bg-gray-50 text-[#073232] border-2 border-[#073232]"
-                }`}
-              >
-                {plan.cta}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="text-center space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button
-            asChild
-            size="lg"
-            className="bg-[#073232] hover:bg-[#0a4a4a] text-white px-8 h-12 shadow-lg"
-          >
-            <Link href="/auth/sign-up">
-              Sign Up Now
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="border-2 border-[#073232] text-[#073232] hover:bg-[#073232] hover:text-white px-8 h-12"
-          >
-            <Link href="/auth/login">
-              Already have an account? Login
-            </Link>
-          </Button>
-        </div>
-        <p className="text-sm text-gray-700">
-          No credit card required for Freemium plan
-        </p>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="mt-20 max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-black text-center mb-8">
-          Frequently Asked Questions
-        </h2>
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg text-black">What are Trade Coins?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">
-                Trade Coins are our platform currency that you can earn through various activities 
-                and use for premium features, boosting listings, or trade with other users.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg text-black">Can I upgrade from Freemium to Premium?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">
-                Yes! You can upgrade to Premium at any time from your account settings. 
-                Your existing Trade Coins and data will be preserved.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg text-black">What happens after 2 trades on Freemium?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">
-                After completing 2 trades in a month, you'll need to wait until the next month 
-                or upgrade to Premium for unlimited trades. You can still browse and favorite items.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg text-black">How do referrals work?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">
-                Share your unique referral link with friends. When they sign up and complete their 
-                first trade, you'll receive Trade Coins (5 for Freemium, 50 for Premium).
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <PlanSection title="P2P Plans" audience="p2p" plans={allPlans.filter((plan) => plan.audience === "p2p")} loadingPlan={loadingPlan} onSubscribe={subscribe} />
+      <PlanSection title="B2B Plans" audience="b2b" plans={allPlans.filter((plan) => plan.audience === "b2b")} loadingPlan={loadingPlan} onSubscribe={subscribe} />
     </div>
+  )
+}
+
+function PlanSection({ title, audience, plans, loadingPlan, onSubscribe }: { title: string; audience: string; plans: SwopifyPlan[]; loadingPlan: string | null; onSubscribe: (plan: SwopifyPlan) => void }) {
+  return (
+    <section className="mb-12 space-y-5">
+      <div className="flex items-center gap-3"><div className="rounded-full bg-[#32cd32]/15 p-3 text-[#073232]"><Crown className="h-5 w-5" /></div><h2 className="text-2xl font-bold text-[#073232]">{title}</h2></div>
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {plans.map((plan) => <PlanCard key={plan.id} plan={plan} loading={loadingPlan === plan.id} onSubscribe={() => onSubscribe(plan)} />)}
+      </div>
+    </section>
+  )
+}
+
+function PlanCard({ plan, loading, onSubscribe }: { plan: SwopifyPlan; loading: boolean; onSubscribe: () => void }) {
+  const features = [
+    `${plan.listItemsPerMonth ?? "Unlimited"} listings per month`,
+    `${plan.tradeProposalsPerMonth ?? "Unlimited"} proposals per month`,
+    `${plan.photosPerListing} photos per listing`,
+    `${plan.featuredListingsPerMonth ?? "Unlimited"} featured listings`,
+    `${plan.transactionFeePercent}% transaction fee`,
+    `${plan.support} support`,
+    plan.escrowEnabled ? "Escrow enabled" : "Basic swaps",
+    plan.staffAccounts ? `${plan.staffAccounts} staff account(s)` : null,
+    plan.bulkUpload ? `Bulk upload: ${plan.bulkUpload}` : null,
+  ].filter(Boolean) as string[]
+
+  return (
+    <Card className="rounded-[2rem] border-gray-200 shadow-lg transition hover:shadow-xl">
+      <CardContent className="flex h-full flex-col p-6">
+        <div className="mb-5 flex items-start justify-between gap-3"><div><Badge className="mb-3 rounded-full bg-gray-200 text-[#073232]">{plan.audience.toUpperCase()}</Badge><h3 className="text-xl font-bold text-[#073232]">{plan.name}</h3></div><Sparkles className="h-6 w-6 text-[#32cd32]" /></div>
+        <div className="mb-5 text-3xl font-bold text-[#073232]">{plan.monthlyPrice < 0 ? "Custom" : plan.monthlyPrice === 0 ? "Free" : `${formatNaira(plan.monthlyPrice)}/mo`}</div>
+        <ul className="mb-6 flex-1 space-y-3">{features.map((feature) => <li key={feature} className="flex gap-2 text-sm text-gray-700"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#32cd32]" />{feature}</li>)}</ul>
+        <Button onClick={onSubscribe} disabled={loading} className="rounded-full bg-[#073232] hover:bg-[#0a4a4a]"><ShieldCheck className="mr-2 h-4 w-4" />{loading ? "Processing..." : plan.monthlyPrice < 0 ? "Contact Sales" : plan.monthlyPrice === 0 ? "Use Free" : "Subscribe"}</Button>
+      </CardContent>
+    </Card>
   )
 }

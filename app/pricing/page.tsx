@@ -1,5 +1,6 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { Suspense } from "react"
 import { PricingPlans } from "@/components/pricing/pricing-plans"
 
 export const metadata = {
@@ -12,9 +13,12 @@ export default function PricingPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <PricingPlans />
+        <Suspense fallback={<div className="min-h-[50vh]" />}>
+          <PricingPlans />
+        </Suspense>
       </main>
       <Footer />
     </div>
   )
 }
+

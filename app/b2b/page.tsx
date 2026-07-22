@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
-import { getB2BListings, hasBusinessProfile } from "@/lib/supabase/database"
+import { getB2BListings, hasBusinessProfile, hasBusinessVerification } from "@/lib/supabase/database"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +25,7 @@ export default function B2BMarketplacePage() {
   const [listings, setListings] = useState<B2BListing[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasBusinessAccess, setHasBusinessAccess] = useState(false)
+  const [hasCACVerification, setHasCACVerification] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("recent")
@@ -47,7 +48,9 @@ export default function B2BMarketplacePage() {
     const checkBusinessAccess = async () => {
       if (user) {
         const hasAccess = await hasBusinessProfile(user.id)
+        const hasVerification = await hasBusinessVerification(user.id)
         setHasBusinessAccess(hasAccess)
+        setHasCACVerification(hasVerification)
       }
       setIsLoading(false)
     }
@@ -60,7 +63,7 @@ export default function B2BMarketplacePage() {
   useEffect(() => {
     const loadListings = async () => {
       // Only load B2B listings if user has business access
-      if (!hasBusinessAccess) {
+      if (!hasBusinessAccess || !hasCACVerification) {
         setListings([])
         return
       }
@@ -82,7 +85,7 @@ export default function B2BMarketplacePage() {
     if (!authLoading) {
       loadListings()
     }
-  }, [authLoading, hasBusinessAccess, selectedCategory, searchQuery, sortBy])
+  }, [authLoading, hasBusinessAccess, selectedCategory, searchQuery, sortBy, hasCACVerification])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -122,7 +125,7 @@ export default function B2BMarketplacePage() {
     )
   }
 
-  if (!hasBusinessAccess) {
+  if (!hasBusinessAccess || !hasCACVerification) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <Header />
@@ -210,13 +213,13 @@ export default function B2BMarketplacePage() {
 
           <div className="text-center px-4">
             <Button asChild size="lg" className="bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#084040] hover:to-[#073232] w-full sm:w-auto shadow-md">
-              <Link href="/b2b/create-profile">
+              <Link href={hasBusinessAccess ? "/verification?type=business" : "/b2b/create-profile"}>
                 <Building2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                Create Business Profile
+                {hasBusinessAccess ? "Verify CAC" : "Create Business Profile"}
               </Link>
             </Button>
             <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4">
-              Already have a business profile? Contact support to verify your account.
+              Business entities must verify CAC before exploring the B2B marketplace.
             </p>
           </div>
         </div>
@@ -370,7 +373,7 @@ function B2BListingCard({ listing, isPreview = false }: { listing: B2BListing; i
         </div>
 
         {/* Listing Content */}
-        <Link href={`/listings/${listing.id}`} className="block">
+        <Link href={`/b2b-listing-details/${listing.id}`} className="block">
           <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-1 sm:mb-2 hover:text-[#073232] transition-colors line-clamp-2">
             {listing.title}
           </h3>
@@ -408,7 +411,7 @@ function B2BListingCard({ listing, isPreview = false }: { listing: B2BListing; i
             </Button>
           ) : (
             <Button size="sm" asChild className="bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#084040] hover:to-[#073232] w-full sm:w-auto text-xs sm:text-sm">
-              <Link href={`/listings/${listing.id}`}>
+              <Link href={`/b2b-listing-details/${listing.id}`}>
                 View Details
               </Link>
             </Button>
@@ -418,3 +421,4 @@ function B2BListingCard({ listing, isPreview = false }: { listing: B2BListing; i
     </Card>
   )
 }
+

@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent } from "@/components/ui/card"
 import { serviceCoinService } from "@/lib/services/service-coin-service"
+import { createFlutterwavePayment } from "@/lib/services/flutterwave-service"
+import { createClient } from "@/lib/supabase/client"
 import type { ServiceCoinPricing } from "@/lib/types/database"
 import { formatNaira } from "@/lib/utils/currency"
 import { toast } from "sonner"
@@ -31,11 +33,18 @@ export function BuyServiceCoinDialog({ open, onOpenChange, coin, userId }: BuySe
     setIsLoading(true)
     try {
       const orderId = await serviceCoinService.createBuyOrder(userId, coin.coin_type, hours)
-      const paymentRef = `PAY_SC_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      await serviceCoinService.completeBuyOrder(orderId, paymentRef)
-      toast.success(`Successfully purchased ${serviceCoins} ${coin.coin_type} Service Coins!`)
-      onOpenChange(false)
-      window.location.reload()
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const payment = await createFlutterwavePayment({
+        amount: total,
+        email: user?.email || "customer@swopify.app",
+        name: user?.user_metadata?.display_name || user?.email || "Swopify user",
+        description: `Buy ${coin.coin_name}`,
+        metadata: { kind: "service_coin", order_id: orderId, coin_type: coin.coin_type, hours, user_id: userId },
+        redirectPath: "/service-coins" as any,
+      } as any)
+      toast.success("Payment initialized. Complete checkout to receive service coins.")
+      window.location.href = payment.checkout_url
     } catch (error) {
       console.error("Error buying Service Coins:", error)
       toast.error("Failed to purchase Service Coins. Please try again.")
@@ -106,3 +115,4 @@ export function BuyServiceCoinDialog({ open, onOpenChange, coin, userId }: BuySe
     </Dialog>
   )
 }
+

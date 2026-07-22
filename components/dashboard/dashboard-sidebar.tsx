@@ -55,14 +55,14 @@ const quickActions = [
     primary: true
   },
   {
-    href: "/dashboard/time-banking/request",
+    href: "/time-banking",
     label: "Request Help",
     icon: HandHeart,
     color: "border-gray-200 hover:bg-gray-50 text-gray-700",
     outline: true
   },
   {
-    href: "/dashboard/gift-cards",
+    href: "/trade-coins",
     label: "Get Trade Coin",
     icon: Coins,
     color: "border-gray-200 hover:bg-gray-50 text-gray-700",
@@ -76,7 +76,7 @@ const quickActions = [
     outline: true
   },
   {
-    href: "/dashboard/safe-zones",
+    href: "/safety",
     label: "Safe Zone",
     icon: Shield,
     color: "border-gray-200 hover:bg-gray-50 text-gray-700",
@@ -233,3 +233,4 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     </aside>
   )
 }
+

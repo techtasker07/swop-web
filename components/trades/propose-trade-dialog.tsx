@@ -25,6 +25,8 @@ import Image from "next/image"
 import type { Listing, Profile, TradeCoinBalance } from "@/lib/types/database"
 import { XIcon } from "lucide-react"
 import { tradeCoinService } from "@/lib/services/trade-coin-service"
+import { requirePersonalVerification } from "@/lib/utils/verification-guard"
+import { swopifyPricingService } from "@/lib/services/swopify-pricing-service"
 
 interface ProposeTradeDialogProps {
   open: boolean
@@ -200,6 +202,10 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
     setIsLoading(true)
 
     try {
+      await requirePersonalVerification()
+      const allowance = await swopifyPricingService.checkTradeProposalAllowance(user.id)
+      if (!allowance.allowed) throw new Error(allowance.message)
+
       // Check if trade involves Trade Coins
       const hasTradeCoin = selectedItems.some(item => item.type === 'trade_coin')
       let escrowId = null
@@ -262,7 +268,10 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
       router.push("/dashboard/trades")
     } catch (error) {
       console.error("Error creating trade proposal:", error)
-      toast.error("Failed to send trade proposal. Please try again.")
+      const messageText = error instanceof Error ? error.message : "Failed to send trade proposal. Please try again."
+      toast.error(messageText)
+      if (messageText.toLowerCase().includes("verify")) router.push("/verification?type=personal")
+      if (messageText.toLowerCase().includes("limit") || messageText.toLowerCase().includes("upgrade")) router.push("/pricing")
     } finally {
       setIsLoading(false)
     }
@@ -605,3 +614,4 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
     </Dialog>
   )
 }
+

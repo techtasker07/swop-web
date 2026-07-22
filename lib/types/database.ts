@@ -40,6 +40,10 @@ export interface Profile {
   business_email: string | null
   year_established: number | null
   verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
+  bvn_verified?: boolean
+  nin_verified?: boolean
+  business_verified?: boolean
+  verified_at?: string | null
   metadata: any | null
   created_at: string
   updated_at: string
@@ -209,10 +213,11 @@ export interface Notification {
   user_id: string
   title: string
   message: string
-  type: 'trade_request' | 'trade_accepted' | 'trade_completed' | 'new_message' | 'rating_received' | 'system'
+  type: 'trade_request' | 'trade_proposal' | 'trade_accepted' | 'trade_completed' | 'new_message' | 'rating_received' | 'system'
   reference_id: string | null
   is_read: boolean
   action_url: string | null
+  data?: any | null
   metadata: any | null
   created_at: string
 }
@@ -365,7 +370,7 @@ export type UserType = 'personal' | 'business'
 export type ListingType = 'item' | 'service'
 export type TradeStatus = 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled' | 'expired'
 export type MessageType = 'text' | 'image' | 'file' | 'trade_offer' | 'system'
-export type NotificationType = 'trade_request' | 'trade_accepted' | 'trade_completed' | 'new_message' | 'rating_received' | 'system'
+export type NotificationType = 'trade_request' | 'trade_proposal' | 'trade_accepted' | 'trade_completed' | 'new_message' | 'rating_received' | 'system'
 
 // API Response types
 export interface ApiResponse<T> {
@@ -425,3 +430,4 @@ export interface CreateTradeData {
   meeting_location?: string
   meeting_time?: string
 }
+
