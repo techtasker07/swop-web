@@ -84,6 +84,41 @@ export class TradeCoinService {
     return data
   }
 
+
+  async createValueBuyOrder({
+    userId,
+    coins,
+    baseAmount,
+    serviceFee,
+    flutterwaveCharge,
+    flutterwaveVat,
+    totalPayable,
+    paymentMethod = "flutterwave",
+  }: {
+    userId: string
+    coins: number
+    baseAmount: number
+    serviceFee: number
+    flutterwaveCharge: number
+    flutterwaveVat: number
+    totalPayable: number
+    paymentMethod?: string
+  }): Promise<string> {
+    const { data, error } = await this.supabase.rpc("create_trade_coin_value_buy_order", {
+      user_id_param: userId,
+      coins_param: coins,
+      base_amount_param: baseAmount,
+      service_fee_param: serviceFee,
+      flutterwave_charge_param: flutterwaveCharge,
+      flutterwave_vat_param: flutterwaveVat,
+      total_payable_param: totalPayable,
+      payment_method_param: paymentMethod,
+    })
+
+    if (error) throw error
+    return data as string
+  }
+
   /**
    * Complete a buy order
    */
