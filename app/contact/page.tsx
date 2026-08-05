@@ -12,9 +12,9 @@ export default function ContactPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
         {[
           { icon: Mail, label: "Email", value: "support@swopify.co", href: "mailto:support@swopify.co" },
-          { icon: Phone, label: "Phone", value: "+234 801 234 5678", href: "tel:+2348012345678" },
-          { icon: MapPin, label: "Location", value: "Lagos, Nigeria", href: null },
-          { icon: Clock, label: "Support Hours", value: "Mon–Fri, 9am–6pm WAT", href: null },
+          { icon: Phone, label: "Phone", value: "+234 814 419 4471", href: "tel:+2348144194471" },
+          { icon: MapPin, label: "Operating Address", value: "FD Mall, New Bodija Area, Ibadan, Oyo State, Nigeria", href: null },
+          { icon: Clock, label: "Support Hours", value: "Mon-Fri, 9am-6pm WAT", href: null },
         ].map(({ icon: Icon, label, value, href }) => (
           <div key={label} className="flex items-start gap-4 p-5 rounded-xl bg-[#073232]/5 border border-[#073232]/10">
             <div className="h-10 w-10 rounded-full bg-[#32cd32]/20 flex items-center justify-center flex-shrink-0">
@@ -34,6 +34,7 @@ export default function ContactPage() {
 
       <DocSection title="General Inquiries">
         <p>For general questions about Swopify, how the platform works, or partnership opportunities, email us at <a href="mailto:support@swopify.co" className="text-[#073232] font-medium underline">support@swopify.co</a>. We typically respond within 24 hours on business days.</p>
+        <p>You can also call or WhatsApp us on <a href="tel:+2348144194471" className="text-[#073232] font-medium underline">+234 814 419 4471</a>.</p>
       </DocSection>
 
       <DocSection title="Technical Support">
@@ -54,6 +55,10 @@ export default function ContactPage() {
       <DocSection title="Business & Partnerships">
         <p>Interested in partnering with Swopify or exploring B2B opportunities? We're always open to collaborations that align with our mission of fair, sustainable exchange.</p>
         <p>Reach out to us at <a href="mailto:support@swopify.co" className="text-[#073232] font-medium underline">support@swopify.co</a> with the subject line "Partnership Inquiry".</p>
+      </DocSection>
+
+      <DocSection title="Operating Address">
+        <p>Swopify operates from FD Mall, New Bodija Area, Ibadan, Oyo State, Nigeria.</p>
       </DocSection>
 
       <DocSection title="Social Media">

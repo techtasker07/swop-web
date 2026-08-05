@@ -36,11 +36,11 @@ export function Footer() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors justify-center sm:justify-start">
                   <Phone className="h-4 w-4 flex-shrink-0" />
-                  <a href="tel:+2348012345678">+234 801 234 5678</a>
+                  <a href="tel:+2348144194471">+234 814 419 4471</a>
                 </div>
                 <div className="flex items-start gap-2 text-sm text-white/70 justify-center sm:justify-start">
                   <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                  <span>Lagos, Nigeria</span>
+                  <span>FD Mall, New Bodija Area, Ibadan, Oyo State, Nigeria</span>
                 </div>
               </div>
 
@@ -194,6 +194,11 @@ export function Footer() {
                 <li>
                   <Link href="/terms" className="text-sm text-white/70 hover:text-white transition-colors inline-flex items-center group">
                     <span className="group-hover:translate-x-1 transition-transform">Terms of Service</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/refund-policy" className="text-sm text-white/70 hover:text-white transition-colors inline-flex items-center group">
+                    <span className="group-hover:translate-x-1 transition-transform">Refund Policy</span>
                   </Link>
                 </li>
                 <li>
