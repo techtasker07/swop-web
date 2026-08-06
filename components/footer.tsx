@@ -220,7 +220,7 @@ export function Footer() {
         <div className="border-t border-white/10 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-white/60">
             <p className="text-center sm:text-left">
-              &copy; {currentYear} Swopify. All rights reserved.     "SWOPIFY is a product of BAYISH INVESTMENT LIMITED"
+              &copy; {currentYear} Swopify. All rights reserved.            "SWOPIFY is a product of BAYISH INVESTMENT LIMITED"
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
               <Link href="/sitemap" className="hover:text-white transition-colors">
