@@ -16,7 +16,7 @@ export class VerificationService {
   }
 
   validateCAC(value: string) {
-    return /^(RC|BN|IT|LLP)\d+$/i.test(value.trim())
+    return /^(RC|BN|IT|LLP)?\d+$/i.test(value.trim())
   }
 
   async verifyBVN(bvn: string, extra: { firstName?: string; lastName?: string; phoneNumber?: string } = {}) {
@@ -40,7 +40,7 @@ export class VerificationService {
   }
 
   async verifyCAC(cac: string, extra: { businessName?: string } = {}) {
-    if (!this.validateCAC(cac)) return { success: false, error: "Invalid CAC format. Use RC, BN, IT, or LLP followed by numbers." }
+    if (!this.validateCAC(cac)) return { success: false, error: "Invalid CAC format. Use RC, BN, IT, LLP plus digits, or enter the numeric registration number." }
     return this.verify("business", {
       rc_number: cac.trim().toUpperCase(),
       expected_business_name: extra.businessName?.trim() || "",
@@ -52,20 +52,19 @@ export class VerificationService {
       const { data: { user } } = await this.supabase.auth.getUser()
       if (!user) throw new Error("User not authenticated")
 
-      await this.supabase.from("verification_requests").insert({
-        user_id: user.id,
-        verification_type: type,
-        verification_data: data,
-        status: "pending",
-      })
-
       const response = await this.supabase.functions.invoke("dojah-verify", {
         body: { type, data, userId: user.id },
       })
 
-      if (response.error) throw response.error
-      if (response.data?.success !== true) throw new Error(response.data?.error || "Verification failed")
+      // The edge function always returns HTTP 200 with a structured body, but
+      // tolerate a legacy 4xx response too so the real error surfaces.
+      const payload = (response.data ?? {}) as { success?: boolean; error?: string; message?: string; data?: unknown }
+      if (payload.success !== true) {
+        throw new Error(payload.error || response.error?.message || "Verification failed")
+      }
 
+      // The edge function updates the profile with the service role. This is a
+      // non-fatal best-effort fallback for older deployments.
       const updates =
         type === "bvn"
           ? { bvn_verified: true, nin_verified: true, verification_status: "verified", verified_at: new Date().toISOString() }
@@ -73,7 +72,11 @@ export class VerificationService {
             ? { nin_verified: true, verification_status: "verified", verified_at: new Date().toISOString() }
             : { business_verified: true, verification_status: "verified", verified_at: new Date().toISOString() }
 
-      await this.supabase.from("profiles").update(updates).eq("id", user.id)
+      try {
+        await this.supabase.from("profiles").update(updates).eq("id", user.id)
+      } catch {
+        // Profile was already updated server-side; ignore client-side failures.
+      }
 
       return {
         success: true,
@@ -83,7 +86,7 @@ export class VerificationService {
             : type === "nin"
               ? "NIN verified successfully."
               : "CAC verified successfully.",
-        data: response.data?.data,
+        data: payload.data,
       }
     } catch (error: any) {
       return { success: false, error: String(error?.message || error).replace("Error: ", "") }
