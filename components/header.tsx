@@ -70,6 +70,41 @@ export function Header() {
     document.body.removeChild(link)
   }
 
+  // Guard for Post Listing — bounce unverified users to the verification page.
+  const handlePostListing = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    setMobileMenuOpen(false)
+
+    if (!user) {
+      router.push("/auth/login?redirect=/dashboard/listings/new")
+      return
+    }
+
+    // Quick profile fetch — only the columns we need.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("bvn_verified, nin_verified, business_verified, verification_status, user_type")
+      .eq("id", user.id)
+      .maybeSingle()
+
+    const isPersonalVerified =
+      profile?.bvn_verified === true || profile?.nin_verified === true
+    const isBusinessVerified =
+      profile?.user_type === "business" &&
+      (profile?.business_verified === true || profile?.verification_status === "verified")
+    const verified = isPersonalVerified || isBusinessVerified
+
+    if (verified) {
+      router.push("/dashboard/listings/new")
+    } else {
+      const path =
+        profile?.user_type === "business"
+          ? "/verification?type=business"
+          : "/verification?type=personal"
+      router.push(`${path}&redirect=/dashboard/listings/new`)
+    }
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-[#073232] to-[#0a4a4a] shadow-lg">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -181,7 +216,7 @@ export function Header() {
                 </Link>
               </Button>
               <Button asChild size="sm" className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
-                <Link href="/dashboard/listings/new">
+                <Link href="/dashboard/listings/new" onClick={handlePostListing}>
                   <ShoppingBag className="h-4 w-4 mr-2" />
                   Post Listing
                 </Link>
@@ -289,7 +324,7 @@ export function Header() {
                     <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
                   </Button>
                   <Button asChild className="bg-white text-[#073232] hover:bg-white/90">
-                    <Link href="/dashboard/listings/new" onClick={() => setMobileMenuOpen(false)}>Post a Listing</Link>
+                    <Link href="/dashboard/listings/new" onClick={handlePostListing}>Post a Listing</Link>
                   </Button>
                 </>
               ) : (

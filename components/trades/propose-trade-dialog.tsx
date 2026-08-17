@@ -43,7 +43,7 @@ interface TradeItem {
   service_description?: string
   service_hours?: number
   // Trade Coin fields
-  coin_type?: 'STC' | 'DTC' | 'GTC'
+  coin_type?: string
   trade_coin_amount?: number
   // Time Banking fields
   time_banking_hours?: number
@@ -61,7 +61,6 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
   const [serviceHours, setServiceHours] = useState("")
   // Trade Coin state
   const [tradeCoinBalance, setTradeCoinBalance] = useState<TradeCoinBalance | null>(null)
-  const [selectedCoinType, setSelectedCoinType] = useState<'STC' | 'DTC' | 'GTC'>('STC')
   const [tradeCoinAmount, setTradeCoinAmount] = useState("")
   // Time Banking state
   const [timeBankingHours, setTimeBankingHours] = useState("")
@@ -141,16 +140,16 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
   const addTradeCoinItem = async () => {
     const amount = parseInt(tradeCoinAmount)
     if (amount > 0) {
-      // Validate balance
-      const hasBalance = await tradeCoinService.validateBalance(user.id, selectedCoinType, amount)
+      // Trade Coins settle against the single TC balance (STC bucket)
+      const hasBalance = await tradeCoinService.validateBalance(user.id, 'STC', amount)
       if (!hasBalance) {
-        toast.error(`Insufficient ${selectedCoinType} balance`)
+        toast.error(`Insufficient Trade Coin (TC) balance`)
         return
       }
 
       setSelectedItems(prev => [...prev, {
         type: 'trade_coin',
-        coin_type: selectedCoinType,
+        coin_type: 'STC',
         trade_coin_amount: amount
       }])
       setTradeCoinAmount("")
@@ -182,9 +181,8 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
         // Estimate service value at ₦2000 per hour
         return total + ((item.service_hours || 0) * 2000)
       } else if (item.type === 'trade_coin') {
-        // Estimate Trade Coin value based on type
-        const coinValue = item.coin_type === 'STC' ? 14.5 : item.coin_type === 'DTC' ? 34.5 : 54.5
-        return total + ((item.trade_coin_amount || 0) * coinValue)
+        // Trade Coin value: 1 TC = ₦1,000
+        return total + ((item.trade_coin_amount || 0) * 1000)
       } else if (item.type === 'time_banking') {
         // Estimate time banking value at ₦2000 per hour
         return total + ((item.time_banking_hours || 0) * 2000)
@@ -270,7 +268,7 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
       console.error("Error creating trade proposal:", error)
       const messageText = error instanceof Error ? error.message : "Failed to send trade proposal. Please try again."
       toast.error(messageText)
-      if (messageText.toLowerCase().includes("verify")) router.push("/verification?type=personal")
+      if (messageText.toLowerCase().includes("verify")) router.push(`/verification?type=personal&redirect=${encodeURIComponent(`/listings/${targetListing.id}`)}`)
       if (messageText.toLowerCase().includes("limit") || messageText.toLowerCase().includes("upgrade")) router.push("/pricing")
     } finally {
       setIsLoading(false)
@@ -380,21 +378,12 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                         )}
                         {item.type === 'trade_coin' && (
                           <>
-                            <div className={`h-10 w-10 rounded flex items-center justify-center ${
-                              item.coin_type === 'STC' ? 'bg-gray-100' :
-                              item.coin_type === 'DTC' ? 'bg-[#073232]/10' : 'bg-[#32cd32]/10'
-                            }`}>
-                              <CurrencyDollarIcon className={`h-5 w-5 ${
-                                item.coin_type === 'STC' ? 'text-gray-600' :
-                                item.coin_type === 'DTC' ? 'text-[#073232]' : 'text-[#32cd32]'
-                              }`} />
+                            <div className="h-10 w-10 rounded bg-[#073232]/10 flex items-center justify-center">
+                              <CurrencyDollarIcon className="h-5 w-5 text-[#073232]" />
                             </div>
                             <div>
-                              <p className="font-medium text-sm">{item.coin_type} Trade Coins</p>
-                              <p className={`text-xs ${
-                                item.coin_type === 'STC' ? 'text-gray-600' :
-                                item.coin_type === 'DTC' ? 'text-[#073232]' : 'text-[#32cd32]'
-                              }`}>{item.trade_coin_amount} TC</p>
+                              <p className="font-medium text-sm">Trade Coins</p>
+                              <p className="text-xs text-[#073232]">{item.trade_coin_amount} TC</p>
                             </div>
                           </>
                         )}
@@ -494,22 +483,10 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                   {tradeCoinBalance && (
                     <div className="flex items-center space-x-2 mt-1 mb-2 text-xs text-muted-foreground">
                       <span>Balance:</span>
-                      <span className="font-medium">STC: {tradeCoinBalance.stc_balance}</span>
-                      <span className="font-medium">DTC: {tradeCoinBalance.dtc_balance}</span>
-                      <span className="font-medium">GTC: {tradeCoinBalance.gtc_balance}</span>
+                      <span className="font-medium">{tradeCoinBalance.total_balance} TC</span>
                     </div>
                   )}
                   <div className="space-y-2 mt-1">
-                    <Select value={selectedCoinType} onValueChange={(value: 'STC' | 'DTC' | 'GTC') => setSelectedCoinType(value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="STC">Silver Trade Coin (STC)</SelectItem>
-                        <SelectItem value="DTC">Diamond Trade Coin (DTC)</SelectItem>
-                        <SelectItem value="GTC">Gold Trade Coin (GTC)</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <div className="flex space-x-2">
                       <Input
                         type="number"

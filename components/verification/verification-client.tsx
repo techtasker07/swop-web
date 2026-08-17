@@ -36,11 +36,76 @@ function validatePhone(phone: string) {
   return /^\+234\d{10}$/.test(phone.trim())
 }
 
+// Translates raw API / network error strings into plain user-facing sentences.
+function friendlyError(raw: string | undefined, method: "bvn" | "nin" | "cac"): string {
+  if (!raw || raw.trim() === "") {
+    return "Verification could not be completed. Please try again."
+  }
+  const msg = raw.toLowerCase()
+  const label = method === "bvn" ? "BVN" : method === "nin" ? "NIN" : "CAC"
+
+  if (/(secret|api).*(key|credential)|could not be authorized|authorization|unauthorized|forbidden\b.*401|401\b|invalid credentials/i.test(msg)) {
+    return "The verification service credentials are not set up correctly. Please contact support."
+  }
+  if (/endpoint.*unavailable|unavailable.*endpoint|not.*available|not.*enabled|not.*active|service.*not.*active|service.*unavailable|not.*subscrib|deactivated|inactive|requires.*subscription|subscription.*required|isn.?t active on this account|is not active on this account/i.test(msg)) {
+    return `The ${label} verification service isn't active on your Dojah account. Please go to dashboard.dojah.io → Products → KYC and make sure ${label} Lookup is turned ON, or contact support to enable this service.`
+  }
+  if (/pending.*request|request.*pending/i.test(msg)) {
+    return "A previous request is still processing. Please wait a moment and try again."
+  }
+  if (/not.*found|no.*record|invalid.*number|could not find|does not exist|unknown/i.test(msg)) {
+    return `No record was found for the ${label} number you entered. Please double-check it and try again.`
+  }
+  if (/name.*match|match.*name|detail.*match|mismatch|does not match|doesn.?t match/i.test(msg)) {
+    return "Your ID was found, but the name or phone number doesn't match the record. Please check your details."
+  }
+  if (/wallet|balance.*insufficient|insufficient.*balance|fund.*wallet|payment.*required|low.*balance/i.test(msg)) {
+    return "The verification service wallet is out of funds. Please contact support to top up the Dojah wallet."
+  }
+  if (/too many|rate.*limit|throttl|many request/i.test(msg)) {
+    return "Too many attempts. Please wait a minute and try again."
+  }
+  if (/network.*error|fetch.*failed|econnrefused|enotfound|timeout|socket/i.test(msg)) {
+    return "Unable to reach the verification service. Please check your internet connection and try again."
+  }
+
+  // No specific rule matched. Show the original message directly so users
+  // (and support) can always see the real cause. We only sanitize URLs and
+  // obvious stack traces.
+  const safe = raw
+    .replace(/https?:\/\/[^\s]+/g, "[redacted-url]")
+    .replace(/\b(sk_|pk_)[A-Za-z0-9_]{12,}/g, "[redacted-token]")
+    .trim()
+
+  // If it looks like a stack trace / technical dump, wrap it in a friendly
+  // sentence. Otherwise return verbatim (capped at 320 chars to avoid UI wrap
+  // issues).
+  if (/stack.?trace|traceback|at (?:[A-Za-z_$][\w$]*\.){2,}/i.test(safe)) {
+    return "Verification could not be completed. Please try again or contact support if this persists."
+  }
+
+  if (safe.length > 0) {
+    return safe.length <= 320 ? safe : safe.slice(0, 317) + "..."
+  }
+
+  return "Verification could not be completed. Please check your details and try again."
+}
+
 // ─── component ───────────────────────────────────────────────────────────────
 export function VerificationClient() {
   const router      = useRouter()
   const searchParams = useSearchParams()
   const { user, profile, isLoading: authLoading } = useAuth()
+
+  // ── return destination: where to send the user after verification ──
+  // Callers (create listing, propose trade, etc.) pass `redirect` so the user
+  // is taken straight back to the activity they were doing before being
+  // diverted to verify their identity.
+  const redirectTarget = useMemo(() => {
+    const raw = searchParams.get("redirect")
+    if (!raw) return null
+    return raw.startsWith("/") && !raw.startsWith("//") ? raw : null
+  }, [searchParams])
 
   // ── derive initial state from URL / profile ──
   const initialMode: Mode =
@@ -105,7 +170,8 @@ export function VerificationClient() {
   // ── submit ──
   const submit = async () => {
     if (!user) {
-      router.push("/auth/login?redirect=/verification")
+      const redirectParam = redirectTarget ? `&redirect=${encodeURIComponent(redirectTarget)}` : ""
+      router.push(`/auth/login?redirect=/verification${redirectParam}`)
       return
     }
 
@@ -123,19 +189,24 @@ export function VerificationClient() {
             : await verificationService.verifyCAC(value, { businessName })
 
       if (!res.success) {
-        setResult({ ok: false, message: res.error ?? "Verification failed. Please check your details and try again." })
-        toast.error(res.error ?? "Verification failed")
+        const msg = friendlyError(res.error, method)
+        setResult({ ok: false, message: msg })
+        toast.error(msg)
       } else {
-        setResult({ ok: true, message: res.message ?? "Verified successfully!" })
-        toast.success(res.message ?? "Verified successfully!")
-        // Short delay so the user can read the success message before navigating
+        const msg = "message" in res ? res.message ?? "Verified successfully!" : "Verified successfully!"
+        setResult({ ok: true, message: msg })
+        toast.success(msg)
         setTimeout(() => {
-          router.push(mode === "business" ? "/b2b" : "/dashboard")
+          if (redirectTarget) {
+            router.push(redirectTarget)
+          } else {
+            router.push(mode === "business" ? "/b2b" : "/dashboard")
+          }
           router.refresh()
         }, 1800)
       }
     } catch (error: any) {
-      const msg = error?.message || "Verification failed. Please try again."
+      const msg = friendlyError(error?.message, method)
       setResult({ ok: false, message: msg })
       toast.error(msg)
     } finally {
@@ -406,7 +477,7 @@ export function VerificationClient() {
                 <button
                   type="button"
                   className="font-semibold text-[#073232] underline underline-offset-2"
-                  onClick={() => router.push("/auth/login?redirect=/verification")}
+                  onClick={() => router.push("/auth/login?redirect=/verification" + (redirectTarget ? `&redirect=${encodeURIComponent(redirectTarget)}` : ""))}
                 >
                   log in
                 </button>{" "}

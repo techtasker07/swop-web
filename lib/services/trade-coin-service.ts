@@ -41,7 +41,7 @@ export class TradeCoinService {
   /**
    * Validate if user has sufficient Trade Coin balance
    */
-  async validateBalance(userId: string, coinType: 'STC' | 'DTC' | 'GTC', amount: number): Promise<boolean> {
+  async validateBalance(userId: string, coinType: string, amount: number): Promise<boolean> {
     const balance = await this.getUserBalance(userId)
     
     switch (coinType) {
@@ -69,7 +69,7 @@ export class TradeCoinService {
    */
   async createBuyOrder(
     userId: string,
-    coinType: 'STC' | 'DTC' | 'GTC',
+    coinType: string,
     hours: number,
     paymentMethod: string = 'opay'
   ): Promise<TradeCoinOrder> {
@@ -136,7 +136,7 @@ export class TradeCoinService {
    */
   async createSellOrder(
     userId: string,
-    coinType: 'STC' | 'DTC' | 'GTC',
+    coinType: string,
     hours: number
   ): Promise<TradeCoinOrder> {
     const { data, error } = await this.supabase.rpc('create_trade_coin_sell_order', {
@@ -198,7 +198,7 @@ export class TradeCoinService {
     tradeId: string,
     fromUserId: string,
     toUserId: string,
-    coinType: 'STC' | 'DTC' | 'GTC',
+    coinType: string,
     amount: number
   ): Promise<string> {
     const { data, error } = await this.supabase.rpc('hold_trade_coins_in_escrow', {
@@ -238,7 +238,7 @@ export class TradeCoinService {
   /**
    * Get coin color for UI
    */
-  getCoinColor(coinType: 'STC' | 'DTC' | 'GTC'): string {
+  getCoinColor(coinType: string): string {
     switch (coinType) {
       case 'STC':
         return 'text-gray-600'
@@ -254,7 +254,7 @@ export class TradeCoinService {
   /**
    * Get coin background color for UI
    */
-  getCoinBgColor(coinType: 'STC' | 'DTC' | 'GTC'): string {
+  getCoinBgColor(coinType: string): string {
     switch (coinType) {
       case 'STC':
         return 'bg-gray-100'
@@ -270,7 +270,7 @@ export class TradeCoinService {
   /**
    * Get coin icon name
    */
-  getCoinIcon(coinType: 'STC' | 'DTC' | 'GTC'): string {
+  getCoinIcon(coinType: string): string {
     switch (coinType) {
       case 'STC':
         return 'star'

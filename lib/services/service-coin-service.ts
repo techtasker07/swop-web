@@ -23,7 +23,7 @@ export class ServiceCoinService {
     }
   }
 
-  async createBuyOrder(userId: string, coinType: "BSC" | "SSC" | "GSC", hours: number): Promise<string> {
+  async createBuyOrder(userId: string, coinType: string, hours: number): Promise<string> {
     const { data, error } = await this.supabase.rpc("create_service_coin_buy_order", {
       user_id_param: userId,
       coin_type_param: coinType,
@@ -150,7 +150,7 @@ export class ServiceCoinService {
     if (error) throw error
   }
 
-  async createSellOrder(userId: string, coinType: "BSC" | "SSC" | "GSC", hours: number): Promise<string> {
+  async createSellOrder(userId: string, coinType: string, hours: number): Promise<string> {
     const { data, error } = await this.supabase.rpc("create_service_coin_sell_order", {
       user_id_param: userId,
       coin_type_param: coinType,
@@ -181,19 +181,21 @@ export class ServiceCoinService {
     return type === "buy" ? subtotal + tradeFee : subtotal - tradeFee
   }
 
-  getCoinColor(coinType: "BSC" | "SSC" | "GSC"): string {
+  getCoinColor(coinType: string): string {
     switch (coinType) {
       case "BSC": return "text-amber-700"
       case "SSC": return "text-gray-600"
       case "GSC": return "text-yellow-600"
+      default: return "text-gray-600"
     }
   }
 
-  getCoinBgColor(coinType: "BSC" | "SSC" | "GSC"): string {
+  getCoinBgColor(coinType: string): string {
     switch (coinType) {
       case "BSC": return "bg-amber-50 border-amber-200"
       case "SSC": return "bg-gray-50 border-gray-200"
       case "GSC": return "bg-yellow-50 border-yellow-200"
+      default: return "bg-gray-50 border-gray-200"
     }
   }
 }

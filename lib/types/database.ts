@@ -273,7 +273,7 @@ export interface Favorite {
 // Trade Coin types
 export interface TradeCoinPricing {
   id: number
-  coin_type: 'STC' | 'DTC' | 'GTC'
+  coin_type: string
   coin_name: string
   base_price_per_hour: number
   trade_fee: number
@@ -288,7 +288,7 @@ export interface TradeCoinOrder {
   id: string
   user_id: string
   order_type: 'buy' | 'sell'
-  coin_type: 'STC' | 'DTC' | 'GTC'
+  coin_type: string
   hours: number
   price_per_hour: number
   trade_fee: number
@@ -306,7 +306,7 @@ export interface TradeCoinTransaction {
   id: number
   user_id: string
   transaction_type: 'earned' | 'spent' | 'purchased' | 'sold' | 'transfer_in' | 'transfer_out'
-  coin_type: 'STC' | 'DTC' | 'GTC'
+  coin_type: string
   amount: number
   naira_value: number | null
   order_id: string | null
@@ -320,7 +320,7 @@ export interface TradeCoinEscrow {
   trade_id: string
   from_user_id: string
   to_user_id: string
-  coin_type: 'STC' | 'DTC' | 'GTC'
+  coin_type: string
   amount: number
   status: 'held' | 'released' | 'refunded'
   held_at: string
@@ -338,7 +338,7 @@ export interface TradeCoinBalance {
 
 // Service Coin types
 export interface ServiceCoinPricing {
-  coin_type: 'BSC' | 'SSC' | 'GSC'
+  coin_type: string
   coin_name: string
   base_price_per_hour: number
   trade_fee: number
@@ -354,7 +354,7 @@ export interface ServiceCoinBalance {
 export interface ServiceCoinOrder {
   id: string
   user_id: string
-  coin_type: 'BSC' | 'SSC' | 'GSC'
+  coin_type: string
   order_type: 'buy' | 'sell'
   hours: number
   amount_naira: number

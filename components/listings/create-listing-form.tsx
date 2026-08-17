@@ -19,7 +19,7 @@ import { hasBusinessProfile } from "@/lib/supabase/database"
 import { requireBusinessVerification, requirePersonalVerification } from "@/lib/utils/verification-guard"
 import { swopifyPricingService } from "@/lib/services/swopify-pricing-service"
 import { toast } from "sonner"
-import { Building2, ImagePlus, Package, Plus, ShieldCheck, Sparkles, Trash2, User, Wrench, X } from "lucide-react"
+import { Building2, ImagePlus, Package, Plus, ShieldCheck, Sparkles, Trash2, User, Wrench, X, ArrowRightLeft } from "lucide-react"
 
 const listingSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
@@ -53,6 +53,9 @@ export function CreateListingForm() {
   const [preferredItemInput, setPreferredItemInput] = useState("")
   const [selectionDone, setSelectionDone] = useState(false)
   const [hasBusinessAccess, setHasBusinessAccess] = useState(false)
+  const [openToAllOffers, setOpenToAllOffers] = useState(false)
+  const [acceptTradeCoins, setAcceptTradeCoins] = useState(true)
+  const [acceptTimeCredits, setAcceptTimeCredits] = useState(true)
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ListingFormData>({
     resolver: zodResolver(listingSchema),
@@ -126,12 +129,12 @@ export function CreateListingForm() {
   }
 
   const uploadImages = async () => {
-    const urls = await Promise.all(selectedImages.map(async (file, index) => {
+const urls = await Promise.all(selectedImages.map(async (file, index) => {
       const fileExt = file.name.split(".").pop()
-      const filePath = `listings/${Date.now()}-${index}.${fileExt}`
-      const { error } = await supabase.storage.from("listings").upload(filePath, file)
+      const filePath = `${user?.id ?? "anonymous"}/listings/${Date.now()}-${index}.${fileExt}`
+      const { error } = await supabase.storage.from("listing-images").upload(filePath, file)
       if (error) throw error
-      return supabase.storage.from("listings").getPublicUrl(filePath).data.publicUrl
+      return supabase.storage.from("listing-images").getPublicUrl(filePath).data.publicUrl
     }))
     return urls
   }
@@ -162,7 +165,7 @@ export function CreateListingForm() {
         tags: data.tags || [],
         preferred_items: data.preferred_items || [],
         is_available: true,
-        metadata: { market_type: data.market_type, listing_type_label: data.type === "item" ? "Physical Item" : "Service", plan_id: allowance.plan?.id },
+        metadata: { market_type: data.market_type, listing_type_label: data.type === "item" ? "Physical Item" : "Service", plan_id: allowance.plan?.id, open_to_all_offers: openToAllOffers, accept_trade_coins: acceptTradeCoins, accept_time_credits: acceptTimeCredits },
       }).select().single()
       if (error) throw error
 
@@ -177,7 +180,10 @@ export function CreateListingForm() {
     } catch (error: any) {
       const message = error?.message || "Failed to create listing. Please try again."
       toast.error(message)
-      if (message.toLowerCase().includes("verify")) router.push(watchedMarketType === "b2b" ? "/verification?type=business" : "/verification?type=personal")
+      if (message.toLowerCase().includes("verify")) {
+        const type = watchedMarketType === "b2b" ? "business" : "personal"
+        router.push(`/verification?type=${type}&redirect=${encodeURIComponent("/dashboard/listings/new")}`)
+      }
       if (message.toLowerCase().includes("plan") || message.toLowerCase().includes("limit")) router.push("/pricing")
     } finally {
       setIsLoading(false)
@@ -243,6 +249,15 @@ export function CreateListingForm() {
               <TokenEditor label="Tags" value={tagInput} setValue={setTagInput} items={watchedTags} addItem={addTag} removeItem={(tag) => setValue("tags", watchedTags.filter((item) => item !== tag))} placeholder="Add tag" />
               <TokenEditor label="Preferred trades" value={preferredItemInput} setValue={setPreferredItemInput} items={watchedPreferredItems} addItem={addPreferredItem} removeItem={(item) => setValue("preferred_items", watchedPreferredItems.filter((entry) => entry !== item))} placeholder="What do you want in return?" />
             </section>
+
+            <section>
+              <div className="mb-4 flex items-center gap-3"><ArrowRightLeft className="h-5 w-5 text-[#073232]" /><h2 className="font-semibold text-[#073232]">Trade rules</h2></div>
+              <div className="space-y-3 rounded-[1.5rem] border border-gray-200 p-5">
+                <ToggleRow label="Open to all trade offers" hint="Allow anyone to propose any trade for this listing." checked={openToAllOffers} onChange={setOpenToAllOffers} />
+                <ToggleRow label="Accept Trade Coins as payment" hint="Let buyers pay using Trade Coins." checked={acceptTradeCoins} onChange={setAcceptTradeCoins} />
+                {watchedType === "service" && <ToggleRow label="Accept Time Credits as payment" hint="Let buyers pay using Time Credits." checked={acceptTimeCredits} onChange={setAcceptTimeCredits} />}
+              </div>
+            </section>
           </CardContent>
         </Card>
 
@@ -272,6 +287,26 @@ function MarketCard({ title, icon, description, onItem, onService, disabled }: {
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return <div className="space-y-2"><Label>{label}</Label>{children}{error && <p className="text-sm text-red-600">{error}</p>}</div>
+}
+
+function ToggleRow({ label, hint, checked, onChange }: { label: string; hint: string; checked: boolean; onChange: (value: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <Label className="font-medium text-[#073232]">{label}</Label>
+        <p className="text-sm text-gray-500">{hint}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-[#32cd32]" : "bg-gray-300"}`}
+      >
+        <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
+      </button>
+    </div>
+  )
 }
 
 function TokenEditor({ label, value, setValue, items, addItem, removeItem, placeholder }: { label: string; value: string; setValue: (value: string) => void; items: string[]; addItem: () => void; removeItem: (value: string) => void; placeholder: string }) {
