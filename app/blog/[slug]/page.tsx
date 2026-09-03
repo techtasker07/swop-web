@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
 import { BlogPostInteractions } from "@/components/blog/blog-post-interactions"
+import { sanitizeBlogHtml } from "@/lib/blog-content"
 
 export const metadata = {
   title: "Blog Post | Swopify",
@@ -42,7 +43,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
       <p className="text-gray-500 text-sm mb-4">{new Date(post.created_at).toLocaleDateString()} by {post.author_name || "Swopify Team"}</p>
       {post.cover_image && <img src={post.cover_image} alt="" className="mb-6 max-h-[28rem] w-full rounded-xl object-cover" />}
-      <div className="prose max-w-none whitespace-pre-wrap">{post.content}</div>
+      <div className="blog-content max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(post.content) }} />
       <BlogPostInteractions slug={post.slug} initialLikes={post.likes} initialShares={post.shares} initialComments={post.comments} />
     </div>
   )

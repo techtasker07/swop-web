@@ -1,6 +1,13 @@
 -- Blog CMS tables for public-facing blog with likes, comments, shares.
 -- Run in Supabase SQL Editor before enabling the webapp routes.
 
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('site-assets', 'site-assets', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Public can read site assets" ON storage.objects;
+CREATE POLICY "Public can read site assets" ON storage.objects FOR SELECT USING (bucket_id = 'site-assets');
+
 CREATE TABLE IF NOT EXISTS blog_posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
