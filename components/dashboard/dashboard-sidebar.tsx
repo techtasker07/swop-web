@@ -11,6 +11,7 @@ import {
   PlusCircle, 
   User as UserIcon, 
   Settings, 
+  BookOpen,
   LogOut,
   Clock,
   HandHeart,
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/dashboard/listings/new", label: "New Listing", icon: PlusCircle },
   { href: "/dashboard/profile", label: "Profile", icon: UserIcon },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/blog", label: "Blog", icon: BookOpen },
 ]
 
 const quickActions = [

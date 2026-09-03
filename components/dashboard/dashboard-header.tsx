@@ -22,6 +22,7 @@ const navItems = [
   { href: "/dashboard/listings", label: "My Listings" },
   { href: "/dashboard/listings/new", label: "New Listing" },
   { href: "/dashboard/profile", label: "Profile" },
+  { href: "/blog", label: "Blog" },
 ]
 
 interface DashboardHeaderProps {

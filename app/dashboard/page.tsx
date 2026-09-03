@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { SmartMatches } from "@/components/dashboard/smart-matches"
 import { RecentTrades } from "@/components/dashboard/recent-trades"
+import { BlogHighlights } from "@/components/dashboard/blog-highlights"
 
 export const metadata = {
   title: "Dashboard | Swopify",
@@ -70,6 +71,14 @@ export default async function DashboardPage() {
     .eq("seller_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5)
+
+  const { data: latestBlogPosts } = await supabase
+    .from("blog_posts")
+    .select("id, title, slug, excerpt, cover_image, created_at")
+    .eq("is_published", true)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(3)
 
   // Fetch smart matches based on user location
   const { data: smartMatches } = await supabase
@@ -137,6 +146,8 @@ export default async function DashboardPage() {
         </h1>
         <p className="text-gray-600 text-xs sm:text-sm mt-1 sm:mt-2">Here's your trading overview for today</p>
       </div>
+
+      <BlogHighlights posts={latestBlogPosts || []} />
 
       {/* Unified Dashboard Presentation */}
       <div className="grid gap-4 sm:gap-6 md:gap-8">
