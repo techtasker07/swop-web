@@ -12,3 +12,31 @@ export function sanitizeBlogHtml(value: string) {
     .replace(/\s(?:href|src)\s*=\s*(?:\"\s*javascript:[^\"]*\"|'\s*javascript:[^']*'|[^\s>]+)/gi, "")
     .replace(allowedTags, "")
 }
+
+export interface Heading {
+  level: "h2" | "h3"
+  text: string
+}
+
+export function extractHeadings(html: string): Heading[] {
+  const headingRegex = /<h([23])[^>]*>([^<]+)<\/h\1>/gi
+  const headings: Heading[] = []
+  let match
+
+  while ((match = headingRegex.exec(html)) !== null) {
+    headings.push({
+      level: `h${match[1]}` as "h2" | "h3",
+      text: match[2].replace(/<[^>]*>/g, "").trim(),
+    })
+  }
+
+  return headings
+}
+
+export function calculateReadingTime(html: string): number {
+  // Remove HTML tags and count words
+  const text = html.replace(/<[^>]*>/g, "").trim()
+  const words = text.split(/\s+/).length
+  const wordsPerMinute = 200
+  return Math.max(1, Math.ceil(words / wordsPerMinute))
+}

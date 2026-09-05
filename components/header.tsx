@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Menu, X, MessageCircle, User as UserIcon, Search, ShoppingBag, Download, ChevronDown, Coins } from "lucide-react"
+import { Menu, X, MessageCircle, Search, ShoppingBag, ChevronDown, Coins, LayoutDashboard } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
@@ -137,7 +137,7 @@ export function Header() {
           </div>
         </form>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           <Link href="/browse" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Browse
           </Link>
@@ -171,33 +171,45 @@ export function Header() {
               </div>
             )}
           </div>
-          <Link href="/time-banking" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
-            Time Banking
-          </Link>
           {user && (
-            <Link 
-              href="/b2b" 
-              className="relative group text-sm font-semibold text-transparent bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 bg-clip-text transition-all duration-300 hover:from-yellow-200 hover:via-yellow-300 hover:to-yellow-400 animate-pulse"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                B2B
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#073232] text-xs font-bold px-1.5 py-0.5 rounded-full animate-bounce">
-                  B2B
-                </span>
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-yellow-500/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 animate-pulse"></div>
+            <Link href="/dashboard" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
+              Dashboard
             </Link>
           )}
-          <button
-            onClick={handleDownloadApp}
-            className="text-sm font-medium text-white/90 transition-colors hover:text-white flex items-center gap-1.5"
-          >
-            <Download className="h-4 w-4" />
-            Download App
-          </button>
+          {user && (
+            <Link href="/messages" className="text-sm font-medium text-white/90 transition-colors hover:text-white flex items-center gap-2">
+              Messages
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Badge>
+              )}
+            </Link>
+          )}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          {user ? (
+            <Button asChild size="sm" className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
+              <Link href="/dashboard/listings/new" onClick={handlePostListing}>
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                Post Listing
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" asChild className="text-white hover:bg-white/20">
+                <Link href="/auth/login">Sign In</Link>
+              </Button>
+              <Button asChild className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
+                <Link href="/pricing">Get Started</Link>
+              </Button>
+            </>
+          )}
+        </div>
+
+        {/* Mobile/Tablet Icons - shown only on md and below */}
+        <div className="flex items-center gap-3 md:flex lg:hidden">
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild className="relative text-white hover:bg-white/20">
@@ -212,23 +224,14 @@ export function Header() {
               </Button>
               <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/20">
                 <Link href="/dashboard">
-                  <UserIcon className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild size="sm" className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
-                <Link href="/dashboard/listings/new" onClick={handlePostListing}>
-                  <ShoppingBag className="h-4 w-4 mr-2" />
-                  Post Listing
+                  <LayoutDashboard className="h-4 w-4" />
                 </Link>
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" asChild className="text-white hover:bg-white/20">
+              <Button variant="ghost" asChild size="sm" className="text-white hover:bg-white/20">
                 <Link href="/auth/login">Sign In</Link>
-              </Button>
-              <Button asChild className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
-                <Link href="/pricing">Get Started</Link>
               </Button>
             </>
           )}
@@ -287,16 +290,6 @@ export function Header() {
                 B2B Trades PRO
               </Link>
             )}
-            <button
-              onClick={() => {
-                handleDownloadApp()
-                setMobileMenuOpen(false)
-              }}
-              className="text-sm font-medium text-white/90 hover:text-white transition-colors flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Download App
-            </button>
             <Link href="/how-it-works" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               How It Works
             </Link>
@@ -321,10 +314,16 @@ export function Header() {
               {user ? (
                 <>
                   <Button variant="ghost" asChild className="justify-start text-white hover:bg-white/20">
-                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Dashboard
+                    </Link>
                   </Button>
                   <Button asChild className="bg-white text-[#073232] hover:bg-white/90">
-                    <Link href="/dashboard/listings/new" onClick={handlePostListing}>Post a Listing</Link>
+                    <Link href="/dashboard/listings/new" onClick={handlePostListing}>
+                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      Post a Listing
+                    </Link>
                   </Button>
                 </>
               ) : (
