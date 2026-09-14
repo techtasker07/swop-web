@@ -39,12 +39,12 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       route: '/dashboard/listings',
     },
     {
-      label: 'Available Listings',
+      label: 'My Listings',
       value: stats.total_listings.toString(),
       icon: EyeIcon,
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
-      route: '/browse',
+      route: '/dashboard/listings',
     },
     {
       label: 'Pending Trades',
@@ -76,7 +76,23 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       icon: CurrencyDollarIcon,
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
-      route: '/dashboard/gift-cards',
+      route: '/dashboard/trade-coins',
+    },
+    {
+      label: 'Barter Score',
+      value: stats.barter_score.toString(),
+      icon: ArrowTrendingUpIcon,
+      color: 'text-[#32cd32]',
+      bgColor: 'bg-[#32cd32]/10',
+      route: '/dashboard/profile',
+    },
+    {
+      label: 'Rating',
+      value: stats.average_rating.toFixed(1),
+      icon: StarIcon,
+      color: 'text-[#32cd32]',
+      bgColor: 'bg-[#32cd32]/10',
+      route: '/dashboard/profile',
     },
   ]
 

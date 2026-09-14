@@ -60,9 +60,22 @@ export default async function DashboardPage() {
     .eq("seller_id", user.id)
     .eq("is_available", true)
 
-  // Fetch trades count (when trades table is implemented)
-  const pendingTrades = 0
-  const acceptedTrades = 0
+  // Fetch trades count for this user
+  let pendingTrades = 0
+  let acceptedTrades = 0
+  try {
+    const { data: tradesData } = await supabase
+      .from('trades')
+      .select('id, status')
+      .or(`proposer_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    
+    if (tradesData) {
+      pendingTrades = tradesData.filter(t => t.status === 'pending').length
+      acceptedTrades = tradesData.filter(t => t.status === 'accepted').length
+    }
+  } catch (error) {
+    console.log('Trades table not available yet')
+  }
 
   // Fetch recent listings
   const { data: recentListings } = await supabase
@@ -116,13 +129,35 @@ export default async function DashboardPage() {
   const displayName = profile?.display_name || user?.user_metadata?.display_name || "there"
   const userLocation = profile?.location?.state || profile?.location?.city || null
 
+  // Fetch time balance using service
+  let timeBalance = profile?.time_credits || 0
+  try {
+    const { TimeBankingService } = await import("@/lib/services/time-banking-service")
+    const timeBankingService = new TimeBankingService()
+    const timeBankingBalance = await timeBankingService.getUserBalance(user.id)
+    timeBalance = timeBankingBalance.total_balance
+  } catch (error) {
+    console.log("Time banking service error, using profile value:", error)
+  }
+
+  // Fetch trade coin balance using service
+  let coinBalance = profile?.trade_coin_balance || profile?.gift_cards || 0
+  try {
+    const { TradeCoinService } = await import("@/lib/services/trade-coin-service")
+    const tradeCoinService = new TradeCoinService()
+    const tradeCoinBalance = await tradeCoinService.getUserBalance(user.id)
+    coinBalance = tradeCoinBalance.total_balance
+  } catch (error) {
+    console.log("Trade coin service error, using profile value:", error)
+  }
+
   const dashboardStats = {
     active_listings: activeCount || 0,
     total_listings: listingsCount || 0,
     pending_trades: pendingTrades,
     accepted_trades: acceptedTrades,
-    time_balance: profile?.time_credits || 0,
-    coin_balance: profile?.gift_cards || 0,
+    time_balance: timeBalance,
+    coin_balance: coinBalance,
     barter_score: profile?.barter_score || 0,
     average_rating: profile?.average_rating || 0,
     total_ratings: profile?.total_ratings || 0,
@@ -159,129 +194,134 @@ export default async function DashboardPage() {
           </div>
           
           <CardContent className="p-4 sm:p-6 md:p-8">
-            {/* Unified Stats Grid - All 7 stats in one grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4 md:gap-6">
-              {/* Active Listings */}
-              <div className="bg-[#32cd32]/10 p-4 sm:p-5 rounded-xl border border-[#32cd32]/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#32cd32] rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            {/* Refined Stats Grid - 5 essential stats with sophisticated design */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+              {/* Active Listings Card */}
+              <Link href="/dashboard/listings" className="group">
+                <div className="h-full bg-gradient-to-br from-[#32cd32]/5 to-[#32cd32]/10 p-4 sm:p-5 rounded-2xl border border-[#32cd32]/20 hover:border-[#32cd32]/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#32cd32] to-[#28a428] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                      <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#32cd32] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <Link href="/dashboard/listings" className="text-[#32cd32] hover:text-[#28a428]">
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Link>
+                  <div className="space-y-1.5">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.active_listings}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-[#073232]/80">Active Listings</p>
+                    <div className="mt-2 pt-2 border-t border-[#32cd32]/20">
+                      <p className="text-[10px] sm:text-xs text-[#073232]/60">of {dashboardStats.total_listings} total</p>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="mt-3 h-1.5 bg-[#32cd32]/10 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#32cd32] to-[#28a428]" 
+                      style={{ width: `${Math.min((dashboardStats.active_listings / Math.max(dashboardStats.total_listings, 1)) * 100, 100)}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.active_listings}</p>
-                  <p className="text-xs sm:text-sm font-medium text-[#073232]/80">Active Listings</p>
-                  <p className="text-[10px] sm:text-xs text-[#073232]/60">of {dashboardStats.total_listings} total</p>
-                </div>
-              </div>
+              </Link>
 
-              {/* Pending Trades */}
-              <div className="bg-[#32cd32]/10 p-4 sm:p-5 rounded-xl border border-[#32cd32]/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#32cd32] rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              {/* Pending Trades Card */}
+              <Link href="/dashboard/trades" className="group">
+                <div className="h-full bg-gradient-to-br from-[#32cd32]/5 to-[#32cd32]/10 p-4 sm:p-5 rounded-2xl border border-[#32cd32]/20 hover:border-[#32cd32]/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#32cd32] to-[#28a428] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                      <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#32cd32] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <Link href="/dashboard/trades" className="text-[#32cd32] hover:text-[#28a428]">
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Link>
+                  <div className="space-y-1.5">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.pending_trades}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-[#073232]/80">Pending Trades</p>
+                    <div className="mt-2 pt-2 border-t border-[#32cd32]/20">
+                      <p className="text-[10px] sm:text-xs text-[#073232]/60">{dashboardStats.accepted_trades} accepted</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.pending_trades}</p>
-                  <p className="text-xs sm:text-sm font-medium text-[#073232]/80">Pending Trades</p>
-                  <p className="text-[10px] sm:text-xs text-[#073232]/60">{dashboardStats.accepted_trades} accepted</p>
-                </div>
-              </div>
+              </Link>
 
-              {/* Time Balance */}
-              <div className="bg-[#073232]/10 p-4 sm:p-5 rounded-xl border border-[#073232]/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#073232] rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Timer className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              {/* Time Balance Card - LIVE DATA */}
+              <Link href="/dashboard/time-banking" className="group">
+                <div className="h-full bg-gradient-to-br from-[#073232]/5 to-[#073232]/10 p-4 sm:p-5 rounded-2xl border border-[#073232]/20 hover:border-[#073232]/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#073232] to-[#0a4a4a] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                      <Timer className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#073232] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <Link href="/dashboard/time-banking" className="text-[#073232] hover:text-[#073232]/80">
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Link>
+                  <div className="space-y-1.5">
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.time_balance}</p>
+                      <p className="text-sm sm:text-base font-semibold text-[#073232]/60">hours</p>
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-[#073232]/80">Time Balance</p>
+                    <div className="mt-2 pt-2 border-t border-[#073232]/20">
+                      <p className="text-[10px] sm:text-xs text-[#073232]/60">Available to trade</p>
+                    </div>
+                  </div>
+                  {/* Status indicator */}
+                  <div className="mt-3 flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[#32cd32] animate-pulse" />
+                    <p className="text-[10px] sm:text-xs text-[#073232]/60">Live balance</p>
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.time_balance}h</p>
-                  <p className="text-xs sm:text-sm font-medium text-[#073232]/80">Time Balance</p>
-                  <p className="text-[10px] sm:text-xs text-[#073232]/60">Available to trade</p>
-                </div>
-              </div>
+              </Link>
 
-              {/* Barter Score */}
-              <div className="bg-[#32cd32]/10 p-4 sm:p-5 rounded-xl border border-[#32cd32]/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#32cd32] rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Award className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              {/* Trade Coins Card - LIVE DATA */}
+              <Link href="/dashboard/trade-coins" className="group">
+                <div className="h-full bg-gradient-to-br from-[#32cd32]/5 to-[#32cd32]/10 p-4 sm:p-5 rounded-2xl border border-[#32cd32]/20 hover:border-[#32cd32]/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#32cd32] to-[#28a428] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                      <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#32cd32] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <Link href="/dashboard/profile" className="text-[#32cd32] hover:text-[#28a428]">
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Link>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.barter_score}</p>
-                  <p className="text-xs sm:text-sm font-medium text-[#073232]/80">Barter Score</p>
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-3 h-3 text-[#32cd32] fill-current" />
-                    <p className="text-[10px] sm:text-xs text-[#073232]/60">{dashboardStats.average_rating.toFixed(1)} rating</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.coin_balance}</p>
+                      <p className="text-xs sm:text-base font-semibold text-[#073232]/60">coins</p>
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-[#073232]/80">Trade Coins</p>
+                    <div className="mt-2 pt-2 border-t border-[#32cd32]/20">
+                      <p className="text-[10px] sm:text-xs text-[#073232]/60">Available balance</p>
+                    </div>
+                  </div>
+                  {/* Status indicator */}
+                  <div className="mt-3 flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[#32cd32] animate-pulse" />
+                    <p className="text-[10px] sm:text-xs text-[#073232]/60">Live balance</p>
                   </div>
                 </div>
-              </div>
+              </Link>
 
-              {/* Trade Coins */}
-              <div className="bg-[#32cd32]/10 p-4 sm:p-5 rounded-xl border border-[#32cd32]/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#32cd32] rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              {/* Rating Card */}
+              <Link href="/dashboard/profile" className="group">
+                <div className="h-full bg-gradient-to-br from-[#073232]/5 to-[#073232]/10 p-4 sm:p-5 rounded-2xl border border-[#073232]/20 hover:border-[#073232]/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#073232] to-[#0a4a4a] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                      <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white fill-current" />
+                    </div>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#073232] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <Link href="/dashboard/trade-coins" className="text-[#32cd32] hover:text-[#28a428]">
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Link>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.coin_balance}</p>
-                  <p className="text-xs sm:text-sm font-medium text-[#073232]/80">Trade Coins</p>
-                  <p className="text-[10px] sm:text-xs text-[#073232]/60">Available balance</p>
-                </div>
-              </div>
-
-              {/* Total Reviews */}
-              <div className="bg-[#32cd32]/10 p-4 sm:p-5 rounded-xl border border-[#32cd32]/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#32cd32] rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  <div className="space-y-1.5">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.average_rating.toFixed(1)}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-[#073232]/80">Average Rating</p>
+                    <div className="mt-2 pt-2 border-t border-[#073232]/20">
+                      <p className="text-[10px] sm:text-xs text-[#073232]/60">{dashboardStats.total_ratings} reviews</p>
+                    </div>
                   </div>
-                  <Link href="/dashboard/profile" className="text-[#32cd32] hover:text-[#28a428]">
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Link>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{dashboardStats.total_ratings}</p>
-                  <p className="text-xs sm:text-sm font-medium text-[#073232]/80">Total Reviews</p>
-                  <p className="text-[10px] sm:text-xs text-[#073232]/60">Community feedback</p>
-                </div>
-              </div>
-
-              {/* Active Rate */}
-              <div className="bg-[#073232]/10 p-4 sm:p-5 rounded-xl border border-[#073232]/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#073232] rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  {/* Star rating visual */}
+                  <div className="mt-3 flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i}
+                        className={`w-3 h-3 ${i < Math.floor(dashboardStats.average_rating) ? 'text-[#32cd32] fill-current' : 'text-gray-300'}`}
+                      />
+                    ))}
                   </div>
-                  <Link href="/dashboard/listings" className="text-[#073232] hover:text-[#073232]/80">
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </Link>
                 </div>
-                <div className="space-y-0.5">
-                  <p className="text-2xl sm:text-3xl font-bold text-[#073232]">{((dashboardStats.active_listings / Math.max(dashboardStats.total_listings, 1)) * 100).toFixed(0)}%</p>
-                  <p className="text-xs sm:text-sm font-medium text-[#073232]/80">Active Rate</p>
-                  <p className="text-[10px] sm:text-xs text-[#073232]/60">Listing activity</p>
-                </div>
-              </div>
+              </Link>
             </div>
           </CardContent>
         </Card>
