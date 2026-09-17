@@ -49,6 +49,62 @@ interface TradeItem {
   time_banking_hours?: number
 }
 
+/**
+ * Store the portable item shape used by the working mobile client. In
+ * particular, do not persist the browser-side Listing object inside JSONB.
+ */
+function serializeProposerItems(items: TradeItem[]) {
+  return items.map((item) => {
+    if (item.type === "listing" && item.listing) {
+      return {
+        listing_id: item.listing_id,
+        title: item.listing.title,
+        description: item.listing.description,
+        category: item.listing.category,
+        condition: item.listing.condition,
+        estimated_value: item.listing.price ?? 0,
+        images: item.listing.listing_images?.map((image) => image.url) ?? [],
+      }
+    }
+
+    if (item.type === "cash") {
+      return {
+        type: "cash",
+        amount: item.cash_amount ?? 0,
+        title: `Cash (${formatNaira(item.cash_amount ?? 0)})`,
+        description: "Cash payment",
+      }
+    }
+
+    if (item.type === "service") {
+      return {
+        type: "service",
+        hours: item.service_hours ?? 0,
+        title: item.service_description ?? "Service offer",
+        description: item.service_description ?? "Service offer",
+        estimated_value: (item.service_hours ?? 0) * 2000,
+      }
+    }
+
+    if (item.type === "trade_coin") {
+      return {
+        type: "trade_coin",
+        coin_type: item.coin_type ?? "STC",
+        amount: item.trade_coin_amount ?? 0,
+        title: `Trade Coins (${item.trade_coin_amount ?? 0} TC)`,
+        description: "Trade Coin payment",
+      }
+    }
+
+    return {
+      type: "time_banking",
+      hours: item.time_banking_hours ?? 0,
+      title: `Time Banking (${item.time_banking_hours ?? 0} hours)`,
+      description: "Time banking credit",
+    }
+  })
+}
+
 export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: ProposeTradeDialogProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -207,19 +263,25 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
       // Check if trade involves Trade Coins
       const hasTradeCoin = selectedItems.some(item => item.type === 'trade_coin')
       let escrowId = null
+      const proposerItems = serializeProposerItems(selectedItems)
 
-      // Create trade proposal
+      // Match the shared contract used by the working mobile app. The
+      // previous web-only columns are not part of the base trades table.
       const { data: trade, error: tradeError } = await supabase
         .from("trades")
         .insert({
           proposer_id: user.id,
           receiver_id: targetListing.seller_id,
-          target_listing_id: targetListing.id,
-          message: message.trim(),
+          message: message.trim() || `Trade proposal for "${targetListing.title}"`,
+          meeting_location: "To be agreed",
           status: 'pending',
-          proposer_items: selectedItems,
-          estimated_value: calculateTotalValue(),
-          involves_trade_coins: hasTradeCoin,
+          proposer_items: proposerItems,
+          metadata: {
+            target_listing_id: targetListing.id,
+            target_listing_title: targetListing.title,
+            estimated_value: calculateTotalValue(),
+            involves_trade_coins: hasTradeCoin,
+          },
         })
         .select()
         .single()
@@ -246,20 +308,28 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
         }
       }
 
-      // Create notification for the seller
-      await supabase
+      // Match the mobile notification contract. The shared schema uses
+      // `metadata`, `reference_id`, and `trade_request`.
+      const { error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: targetListing.seller_id,
-          type: 'trade_proposal',
-          title: 'New Trade Proposal',
+          type: 'trade_request',
+          title: 'Trade Request Received',
           message: `${user.user_metadata?.display_name || 'Someone'} wants to trade for your ${targetListing.title}`,
-          data: {
+          reference_id: trade.id,
+          metadata: {
             trade_id: trade.id,
             listing_id: targetListing.id,
             proposer_name: user.user_metadata?.display_name || 'Anonymous'
           }
         })
+
+      // Do not report a successfully saved trade as failed merely because a
+      // secondary notification could not be persisted.
+      if (notificationError) {
+        console.error("Trade proposal notification could not be created:", notificationError)
+      }
 
       toast.success("Trade proposal sent successfully!")
       onOpenChange(false)

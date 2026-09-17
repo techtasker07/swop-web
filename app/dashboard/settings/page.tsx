@@ -87,6 +87,15 @@ export default function SettingsPage() {
     router.refresh()
   }
 
+  const restartNavigationGuide = () => {
+    for (const scope of ["guest", "member"]) {
+      window.localStorage.removeItem(`swopify-navigation-guide-${scope}-dismissed`)
+      window.localStorage.removeItem(`swopify-navigation-guide-${scope}-completed`)
+    }
+    window.dispatchEvent(new Event("swopify-navigation-guide-reset"))
+    setMessage({ type: "success", text: "Navigation guide restarted. Follow the floating guide to continue." })
+  }
+
   // Derived verification state
   const bvnVerified = profile?.bvn_verified === true
   const ninVerified = profile?.nin_verified === true
@@ -110,6 +119,16 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6">
+        <Card className="overflow-hidden border-[#073232]/15 bg-gradient-to-br from-white via-white to-[#32cd32]/10">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-[#073232]">Smart Navigation Guide</CardTitle>
+            <CardDescription>Restart the floating product tour whenever you want a fresh walkthrough of Swopify.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-4">
+            <p className="max-w-xl text-sm text-muted-foreground">The guide stays out of your layout and remembers when you skip or complete it.</p>
+            <Button type="button" onClick={restartNavigationGuide} className="bg-[#073232] text-white hover:bg-[#0a4a4a]">Show navigation guide</Button>
+          </CardContent>
+        </Card>
 
         {/* ── Identity Verification Card ── */}
         <Card className={`border-2 ${anyVerified ? "border-[#32cd32]/40 bg-[#32cd32]/5" : "border-orange-300 bg-orange-50"}`}>

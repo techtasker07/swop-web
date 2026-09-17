@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Menu, X, MessageCircle, Search, ShoppingBag, ChevronDown, Coins, LayoutDashboard } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
 import { Badge } from "@/components/ui/badge"
@@ -18,36 +18,45 @@ export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [unreadCount, setUnreadCount] = useState(0)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
+
+  const refreshUnreadCount = useCallback(async (userId: string) => {
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_read', false)
+      .neq('sender_id', userId)
+
+    setUnreadCount(count || 0)
+  }, [supabase])
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      
-      if (user) {
-        // Get unread message count
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_read', false)
-          .neq('sender_id', user.id)
-        
-        setUnreadCount(count || 0)
-      }
+      if (user) await refreshUnreadCount(user.id)
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      if (!session?.user) {
-        setUnreadCount(0)
-      }
+      if (session?.user) void refreshUnreadCount(session.user.id)
+      else setUnreadCount(0)
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [refreshUnreadCount, supabase])
+
+  useEffect(() => {
+    if (!user) return
+    const channel = supabase
+      .channel(`header-unread-messages-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => void refreshUnreadCount(user.id))
+      .subscribe()
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [refreshUnreadCount, supabase, user])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,7 +147,7 @@ export function Header() {
         </form>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <Link href="/browse" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
+          <Link data-nav="browse-link" href="/browse" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
             Browse
           </Link>
           {/* Coins dropdown */}
@@ -172,12 +181,12 @@ export function Header() {
             )}
           </div>
           {user && (
-            <Link href="/dashboard" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
+            <Link data-nav="dashboard-link" href="/dashboard" className="text-sm font-medium text-white/90 transition-colors hover:text-white">
               Dashboard
             </Link>
           )}
           {user && (
-            <Link href="/messages" className="text-sm font-medium text-white/90 transition-colors hover:text-white flex items-center gap-2">
+            <Link data-nav="messages-link" href="/messages" className="text-sm font-medium text-white/90 transition-colors hover:text-white flex items-center gap-2">
               Messages
               {unreadCount > 0 && (
                 <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
@@ -191,7 +200,7 @@ export function Header() {
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <Button asChild size="sm" className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
-              <Link href="/dashboard/listings/new" onClick={handlePostListing}>
+              <Link data-nav="post-listing-btn" href="/dashboard/listings/new" onClick={handlePostListing}>
                 <ShoppingBag className="h-4 w-4 mr-2" />
                 Post Listing
               </Link>
@@ -202,7 +211,7 @@ export function Header() {
                 <Link href="/auth/login">Sign In</Link>
               </Button>
               <Button asChild className="bg-white text-[#073232] hover:bg-white/90 shadow-md">
-                <Link href="/pricing">Get Started</Link>
+                <Link data-nav="pricing-link" href="/pricing">Get Started</Link>
               </Button>
             </>
           )}
@@ -266,13 +275,13 @@ export function Header() {
             <Link href="/browse" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Browse Listings
             </Link>
-            <Link href="/categories" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
+            <Link data-nav="categories-link" href="/categories" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Categories
             </Link>
-            <Link href="/trade-coins" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
+            <Link data-nav="trade-coins-link" href="/trade-coins" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Trade Coins
             </Link>
-            <Link href="/service-coins" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
+            <Link data-nav="service-coins-link" href="/service-coins" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
               Service Coins
             </Link>
             <Link href="/time-banking" className="text-sm font-medium text-white/90 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
@@ -320,7 +329,7 @@ export function Header() {
                     </Link>
                   </Button>
                   <Button asChild className="bg-white text-[#073232] hover:bg-white/90">
-                    <Link href="/dashboard/listings/new" onClick={handlePostListing}>
+                    <Link data-nav="post-listing-btn" href="/dashboard/listings/new" onClick={handlePostListing}>
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       Post a Listing
                     </Link>

@@ -87,7 +87,7 @@ export default async function DashboardPage() {
 
   const { data: latestBlogPosts } = await supabase
     .from("blog_posts")
-    .select("id, title, slug, excerpt, cover_image, created_at")
+    .select("id, title, slug, excerpt, content, cover_image, author_name, created_at")
     .eq("is_published", true)
     .eq("is_active", true)
     .order("created_at", { ascending: false })

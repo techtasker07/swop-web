@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { formatNaira } from "@/lib/utils/currency"
 import { Building2, MapPin, ShieldCheck } from "lucide-react"
 
+
 export default async function B2BListingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()

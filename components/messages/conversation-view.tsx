@@ -1,177 +1,65 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent } from "@/components/ui/card"
-import { 
-  PaperAirplaneIcon,
-  ShieldCheckIcon
-} from "@heroicons/react/24/outline"
 import { createClient } from "@/lib/supabase/client"
+import { format } from "date-fns"
+import { Send, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
-import { formatDistanceToNow } from "date-fns"
 
-interface ConversationViewProps {
-  conversation: any
-  currentUser: any
-  participant: any
-}
-
-export function ConversationView({ conversation, currentUser, participant }: ConversationViewProps) {
-  const [messages, setMessages] = useState(conversation.messages || [])
+export function ConversationView({ conversation, conversationIds, initialMessages, currentUser, participant, onMessageSent }: { conversation: any; conversationIds?: string[]; initialMessages?: any[]; currentUser: any; participant: any; onMessageSent?: () => void | Promise<void> }) {
+  const [messages, setMessages] = useState<any[]>(initialMessages || conversation.messages || [])
   const [newMessage, setNewMessage] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
+  const [isSending, setIsSending] = useState(false)
+  const endRef = useRef<HTMLDivElement>(null)
+  const supabase = useMemo(() => createClient(), [])
+  const conversationIdKey = (conversationIds?.length ? conversationIds : [conversation.id]).join(",")
+  const activeConversationIds = useMemo(() => conversationIdKey.split(",").filter(Boolean), [conversationIdKey])
 
+  const loadMessages = useCallback(async () => {
+    const { data, error } = await supabase.from("messages").select("id, conversation_id, sender_id, content, created_at, is_read").in("conversation_id", activeConversationIds).order("created_at", { ascending: true })
+    if (!error) setMessages(data || [])
+  }, [activeConversationIds, supabase])
+
+  useEffect(() => { void loadMessages() }, [loadMessages])
   useEffect(() => {
-    scrollToBottom()
-    markMessagesAsRead()
-  }, [messages])
+    const channel = supabase.channel(`conversation-${conversationIdKey}`).on("postgres_changes", { event: "*", schema: "public", table: "messages" }, (payload) => {
+      const changedMessage = (payload.new as { conversation_id?: string } | null)?.conversation_id || (payload.old as { conversation_id?: string } | null)?.conversation_id
+      if (changedMessage && activeConversationIds.includes(changedMessage)) void loadMessages()
+    }).subscribe()
+    return () => { void supabase.removeChannel(channel) }
+  }, [activeConversationIds, conversationIdKey, loadMessages, supabase])
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" })
+    const unread = messages.filter((message) => !message.is_read && message.sender_id !== currentUser.id).map((message) => message.id)
+    if (!unread.length) return
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  const markMessagesAsRead = async () => {
-    const unreadMessages = messages.filter((msg: any) => 
-      !msg.is_read && msg.sender_id !== currentUser.id
-    )
-
-    if (unreadMessages.length > 0) {
-      await supabase
-        .from("messages")
-        .update({ is_read: true })
-        .in("id", unreadMessages.map((msg: any) => msg.id))
+    const markMessagesRead = async () => {
+      const { error } = await supabase.from("messages").update({ is_read: true }).in("id", unread)
+      if (error) return
+      setMessages((current) => current.map((message) => unread.includes(message.id) ? { ...message, is_read: true } : message))
+      await onMessageSent?.()
     }
+
+    void markMessagesRead()
+  }, [currentUser.id, messages, onMessageSent, supabase])
+
+  const send = async (event: React.FormEvent) => {
+    event.preventDefault()
+    const content = newMessage.trim()
+    if (!content || isSending) return
+    setIsSending(true)
+    const { error } = await supabase.from("messages").insert({ conversation_id: conversation.id, sender_id: currentUser.id, content, message_type: "text" })
+    if (error) toast.error("Message could not be sent. Please try again.")
+    else { setNewMessage(""); await supabase.from("conversations").update({ last_message_at: new Date().toISOString(), last_message_time: new Date().toISOString() }).eq("id", conversation.id); await loadMessages(); await onMessageSent?.() }
+    setIsSending(false)
   }
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!newMessage.trim()) return
-
-    setIsLoading(true)
-
-    try {
-      const { data: message, error } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversation.id,
-          sender_id: currentUser.id,
-          content: newMessage.trim(),
-          message_type: "text",
-        })
-        .select(`
-          *,
-          sender:profiles!sender_id(display_name, avatar_url)
-        `)
-        .single()
-
-      if (error) throw error
-
-      setMessages((prev: any) => [...prev, message])
-      setNewMessage("")
-
-      // Update conversation last_message_at
-      await supabase
-        .from("conversations")
-        .update({ last_message_at: new Date().toISOString() })
-        .eq("id", conversation.id)
-
-    } catch (error) {
-      console.error("Error sending message:", error)
-      toast.error("Failed to send message")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b border-border p-4">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={participant?.avatar_url} />
-            <AvatarFallback>
-              {participant?.display_name?.[0]?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="font-medium text-foreground flex items-center space-x-2">
-              <span>{participant?.display_name || "Unknown User"}</span>
-              {participant?.verification_status === 'verified' && (
-                <ShieldCheckIcon className="h-4 w-4 text-[#32cd32]" />
-              )}
-            </h2>
-            {conversation.listing && (
-              <p className="text-sm text-muted-foreground">
-                About: {conversation.listing.title}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message: any) => {
-          const isOwn = message.sender_id === currentUser.id
-          
-          return (
-            <div
-              key={message.id}
-              className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
-                <Card className={`${
-                  isOwn 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted'
-                }`}>
-                  <CardContent className="p-3">
-                    <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                    }`}>
-                      {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {!isOwn && (
-                <Avatar className="h-8 w-8 order-1 mr-2">
-                  <AvatarImage src={participant?.avatar_url} />
-                  <AvatarFallback className="text-xs">
-                    {participant?.display_name?.[0]?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          )
-        })}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Message Input */}
-      <div className="border-t border-border p-4">
-        <form onSubmit={handleSendMessage} className="flex space-x-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={isLoading || !newMessage.trim()}>
-            <PaperAirplaneIcon className="h-4 w-4" />
-          </Button>
-        </form>
-      </div>
-    </div>
-  )
+  return <div className="flex min-h-0 flex-1 flex-col bg-[#fbfdfc]">
+    <header className="flex items-center gap-3 border-b border-[#073232]/10 bg-white px-5 py-4"><Avatar className="h-10 w-10"><AvatarImage src={participant?.avatar_url} /><AvatarFallback className="bg-[#32cd32]/15 font-bold text-[#073232]">{participant?.display_name?.[0]?.toUpperCase() || "U"}</AvatarFallback></Avatar><div className="min-w-0"><div className="flex items-center gap-1.5"><h2 className="truncate font-bold text-[#073232]">{participant?.display_name || "Swopify member"}</h2>{participant?.verification_status === "verified" && <ShieldCheck className="h-4 w-4 text-[#0a4a4a]" />}</div><p className="truncate text-xs text-slate-500">{conversationIds && conversationIds.length > 1 ? `${conversationIds.length} conversations combined into one history` : conversation.listing ? `Discussing: ${conversation.listing.title}` : "Secure Swopify conversation"}</p></div></header>
+    <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"><div className="mx-auto max-w-3xl space-y-4">{messages.map((message) => { const own = message.sender_id === currentUser.id; return <div key={message.id} className={`flex ${own ? "justify-end" : "justify-start"}`}><div className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm shadow-sm sm:max-w-[70%] ${own ? "rounded-br-md bg-[#073232] text-white" : "rounded-bl-md border border-[#073232]/10 bg-white text-slate-700"}`}><p className="whitespace-pre-wrap leading-6">{message.content}</p><p className={`mt-1.5 text-[10px] ${own ? "text-white/55" : "text-slate-400"}`}>{format(new Date(message.created_at), "p")}</p></div></div> })}<div ref={endRef} /></div></div>
+    <div className="border-t border-[#073232]/10 bg-white p-4 sm:p-5"><form onSubmit={send} className="mx-auto flex max-w-3xl items-center gap-2 rounded-2xl border border-[#073232]/15 bg-[#f7faf9] p-1.5 focus-within:border-[#0a4a4a] focus-within:ring-2 focus-within:ring-[#32cd32]/20"><Input value={newMessage} onChange={(event) => setNewMessage(event.target.value)} placeholder="Write a message…" disabled={isSending} className="h-10 border-0 bg-transparent shadow-none focus-visible:ring-0" /><Button type="submit" size="icon" disabled={isSending || !newMessage.trim()} className="h-10 w-10 shrink-0 rounded-xl bg-[#073232] text-white hover:bg-[#0a4a4a]"><Send className="h-4 w-4" /><span className="sr-only">Send message</span></Button></form></div>
+  </div>
 }

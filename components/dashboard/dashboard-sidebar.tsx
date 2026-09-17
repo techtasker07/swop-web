@@ -133,6 +133,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  data-nav={item.href === "/dashboard" ? "dashboard-overview" : item.href === "/dashboard/listings" ? "dashboard-listings" : item.href === "/dashboard/listings/new" ? "dashboard-new-listing" : item.href === "/dashboard/profile" ? "dashboard-profile" : undefined}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive 
@@ -150,7 +151,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           {/* Quick Actions */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 mb-3">
-              <Sparkles className="w-4 h-4 text-[#32cd32]" />
+              <Sparkles className="w-4 h-4 text-[#073232]/55" />
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick Actions</h3>
             </div>
             
@@ -162,13 +163,13 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
                   <div key={action.href} className="relative">
                     <Button
                       asChild
-                      className={`w-full justify-start h-10 text-white shadow-lg ${action.color}`}
+                      className="h-10 w-full justify-start border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:text-[#073232]"
                     >
-                      <Link href={action.href} className="flex items-center space-x-2">
+                      <Link data-nav={action.href === "/dashboard/listings/new" ? "dashboard-new-listing" : action.href === "/dashboard/time-banking" ? "dashboard-time-banking" : undefined} href={action.href} className="flex items-center space-x-2">
                         <Icon className="w-4 h-4" />
                         <span className="text-sm font-medium">{action.label}</span>
                         {action.badge && (
-                          <span className="ml-auto bg-white bg-opacity-20 px-2 py-0.5 rounded-full text-xs">
+                          <span className="ml-auto rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
                             {action.badge}
                           </span>
                         )}
@@ -188,13 +189,13 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
                     <Button
                       asChild
                       variant="outline"
-                      className={`w-full justify-start h-9 ${action.color}`}
+                      className="h-9 w-full justify-start border-gray-200 bg-white text-gray-700 shadow-none hover:bg-gray-50 hover:text-[#073232]"
                     >
-                      <Link href={action.href} className="flex items-center space-x-2">
+                      <Link data-nav={action.href === "/dashboard/listings/new" ? "dashboard-new-listing" : action.href === "/dashboard/time-banking" ? "dashboard-time-banking" : undefined} href={action.href} className="flex items-center space-x-2">
                         <Icon className="w-4 h-4" />
                         <span className="text-sm">{action.label}</span>
                         {action.badge && (
-                          <span className="ml-auto bg-[#32cd32]/10 text-[#32cd32] px-2 py-0.5 rounded-full text-xs">
+                          <span className="ml-auto rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
                             {action.badge}
                           </span>
                         )}
