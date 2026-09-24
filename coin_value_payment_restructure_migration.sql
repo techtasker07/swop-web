@@ -173,6 +173,44 @@ BEGIN
   WHERE user_id = rec.user_id;
 END;
 $$;
+
+-- Web parity helper: merge legacy service coin category balances into the single SC bucket.
+UPDATE service_coin_balances
+SET bsc_balance = COALESCE(bsc_balance, 0) + COALESCE(ssc_balance, 0) + COALESCE(gsc_balance, 0),
+    ssc_balance = 0,
+    gsc_balance = 0,
+    updated_at = now()
+WHERE COALESCE(ssc_balance, 0) > 0 OR COALESCE(gsc_balance, 0) > 0;
+
+CREATE OR REPLACE FUNCTION cancel_service_coin_payout_order(
+  order_id_param uuid
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  rec service_coin_orders%ROWTYPE;
+  coins int;
+BEGIN
+  SELECT * INTO rec FROM service_coin_orders WHERE id = order_id_param;
+  IF rec.id IS NULL OR rec.status NOT IN ('pending_payout', 'processing_payout') THEN
+    RETURN;
+  END IF;
+
+  coins := COALESCE((rec.payout_details->>'coins')::int, GREATEST((rec.hours)::int, 1));
+
+  INSERT INTO service_coin_balances(user_id, bsc_balance, ssc_balance, gsc_balance)
+  VALUES (rec.user_id, 0, 0, 0)
+  ON CONFLICT (user_id) DO NOTHING;
+
+  UPDATE service_coin_balances
+  SET bsc_balance = bsc_balance + coins,
+      updated_at = now()
+  WHERE user_id = rec.user_id;
+
+  UPDATE service_coin_orders
+  SET status = 'cancelled',
+      updated_at = now()
+  WHERE id = order_id_param;
+END;
+$$;
 -- Web parity helper: merge legacy service coin category balances into the single SC bucket.
 UPDATE service_coin_balances
 SET bsc_balance = COALESCE(bsc_balance, 0) + COALESCE(ssc_balance, 0) + COALESCE(gsc_balance, 0),

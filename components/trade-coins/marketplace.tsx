@@ -68,9 +68,9 @@ export function TradeCoinMarketplace({ userId }: TradeCoinMarketplaceProps) {
           coins: quote.coins,
           base_amount: quote.baseAmount,
           user_id: userId,
+          redirect_url: "/trade-coins",
         },
-        redirectPath: "/trade-coins" as any,
-      } as any)
+      })
       window.location.href = payment.checkout_url
     } catch (error: any) {
       toast.error(error?.message || "Could not initialize Trade Coin payment")

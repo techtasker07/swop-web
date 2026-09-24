@@ -83,9 +83,9 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
           coins: buyQuote.coins,
           base_amount: buyQuote.baseAmount,
           user_id: userId,
+          redirect_url: "/service-coins",
         },
-        redirectPath: "/service-coins" as any,
-      } as any)
+      })
       window.location.href = payment.checkout_url
     } catch (error: any) {
       toast.error(error?.message || "Could not initialize Service Coin payment")

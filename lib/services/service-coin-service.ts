@@ -118,19 +118,23 @@ export class ServiceCoinService {
     accountName: string
     bankName: string
   }) {
-    const response = await fetch("/api/flutterwave/service-payout", {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (!supabaseUrl) throw new Error("Supabase URL not configured")
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/flutterwave-service-payout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        orderId,
         amount,
         account_number: accountNumber,
         account_name: accountName,
         bank_name: bankName,
+        reference: `swopify-sc-payout-${orderId}`,
+        narration: "Swopify Service Coin payout",
       }),
     })
     const data = await response.json()
-    if (!response.ok || !data.success) throw new Error(data.error || "Payout request failed")
+    if (!response.ok) throw new Error(data.message || "Payout request failed")
     return data
   }
 
