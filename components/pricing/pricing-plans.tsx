@@ -59,7 +59,12 @@ export function PricingPlans() {
         metadata: { kind: "subscription", plan_id: plan.id, audience: plan.audience, user_id: user.id },
         redirectPath: "/pricing",
       })
-      window.location.href = payment.checkout_url
+      // Open checkout in a popup window so close/back button returns to app
+      const width = 600
+      const height = 700
+      const left = (window.innerWidth - width) / 2
+      const top = (window.innerHeight - height) / 2
+      window.open(payment.checkout_url, "flutterwave_checkout", `width=${width},height=${height},left=${left},top=${top}`)
     } catch (error: any) {
       toast.error(error?.message || "Could not initialize payment")
     } finally {

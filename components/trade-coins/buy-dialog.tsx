@@ -47,7 +47,12 @@ export function BuyTradeCoinDialog({ open, onOpenChange, coin, userId }: BuyTrad
         redirectPath: "/trade-coins" as any,
       } as any)
       toast.success("Payment initialized. Complete checkout to receive coins.")
-      window.location.href = payment.checkout_url
+      // Open checkout in a popup window so close/back button returns to app
+      const width = 600
+      const height = 700
+      const left = (window.innerWidth - width) / 2
+      const top = (window.innerHeight - height) / 2
+      window.open(payment.checkout_url, "flutterwave_checkout", `width=${width},height=${height},left=${left},top=${top}`)
     } catch (error) {
       console.error("Error buying Trade Coins:", error)
       toast.error("Failed to purchase Trade Coins. Please try again.")
@@ -97,7 +102,16 @@ export function BuyTradeCoinDialog({ open, onOpenChange, coin, userId }: BuyTrad
               </Button>
             </div>
             <div className="text-center">
-              <span className="text-2xl font-bold">{hours}</span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={hours.toString()}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "")
+                  setHours(value === "" ? 1 : Math.max(1, Math.min(10, Number(value))))
+                }}
+                className="mx-auto w-24 rounded-lg border-2 border-gray-300 px-3 py-2 text-center text-2xl font-bold"
+              />
               <span className="text-muted-foreground ml-2">Hours</span>
             </div>
           </div>

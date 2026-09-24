@@ -18,8 +18,8 @@ interface ServiceCoinMarketplaceProps {
 }
 
 export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) {
-  const [hours, setHours] = useState(1)
-  const [sellHours, setSellHours] = useState(1)
+  const [hoursInput, setHoursInput] = useState("")
+  const [sellHoursInput, setSellHoursInput] = useState("")
   const [buyQuote, setBuyQuote] = useState<CoinPaymentQuote | null>(null)
   const [payoutQuote, setPayoutQuote] = useState<CoinPaymentQuote | null>(null)
   const [balance, setBalance] = useState(0)
@@ -29,6 +29,10 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
   const [isPaying, setIsPaying] = useState(false)
   const [isSelling, setIsSelling] = useState(false)
 
+  const maxSellHours = Math.max(0, Math.floor(balance))
+  const hours = hoursInput === "" ? 1 : Math.max(1, Number(hoursInput) || 1)
+  const sellHours = sellHoursInput === "" ? 1 : Math.max(1, Math.min(maxSellHours, Number(sellHoursInput) || 1))
+  
   const buyAmount = useMemo(() => Math.max(1, hours) * COIN_NAIRA_VALUE, [hours])
   const sellAmount = useMemo(() => Math.max(1, sellHours) * COIN_NAIRA_VALUE, [sellHours])
 
@@ -51,7 +55,6 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
     return () => { active = false }
   }, [userId, sellAmount])
 
-  const maxSellHours = Math.max(0, Math.floor(balance))
   const hasEnoughBalance = sellHours <= maxSellHours
 
   const handleBuy = async () => {
@@ -86,7 +89,12 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
           redirect_url: "/service-coins",
         },
       })
-      window.location.href = payment.checkout_url
+      // Open checkout in a popup window so close/back button returns to app
+      const width = 600
+      const height = 700
+      const left = (window.innerWidth - width) / 2
+      const top = (window.innerHeight - height) / 2
+      window.open(payment.checkout_url, "flutterwave_checkout", `width=${width},height=${height},left=${left},top=${top}`)
     } catch (error: any) {
       toast.error(error?.message || "Could not initialize Service Coin payment")
     } finally {
@@ -169,7 +177,17 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
             <PanelTitle icon={<Clock3 className="h-5 w-5" />} title="Buy Service Coin" body="Purchase service hours through Flutterwave checkout." />
             <div className="space-y-2">
               <label className="text-sm font-semibold text-[#073232]">Hours to buy</label>
-              <Input type="number" min={1} step={1} value={hours} onChange={(event) => setHours(Math.max(1, Number(event.target.value) || 1))} className="h-12 rounded-full px-5 font-semibold" />
+              <Input 
+                type="text" 
+                inputMode="numeric"
+                value={hoursInput} 
+                onChange={(event) => {
+                  const value = event.target.value.replace(/[^0-9]/g, "")
+                  setHoursInput(value)
+                }} 
+                className="h-12 rounded-full px-5 font-semibold" 
+                placeholder="Enter hours to buy (1+)" 
+              />
             </div>
             <QuoteBox quote={buyQuote} mode="buy" />
             <Button onClick={handleBuy} disabled={!buyQuote || isPaying} className="h-12 w-full rounded-full bg-[#32cd32] font-bold text-[#073232] hover:bg-[#28b928]">
@@ -185,7 +203,17 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
               <Input value={accountName} onChange={(event) => setAccountName(event.target.value)} placeholder="Account name" className="h-12 rounded-full px-5" />
               <Input value={accountNumber} onChange={(event) => setAccountNumber(event.target.value)} placeholder="Account number" className="h-12 rounded-full px-5" />
               <Input value={bankName} onChange={(event) => setBankName(event.target.value)} placeholder="Bank name" className="h-12 rounded-full px-5" />
-              <Input type="number" min={1} max={Math.max(1, maxSellHours)} step={1} value={sellHours} onChange={(event) => setSellHours(Math.max(1, Number(event.target.value) || 1))} className="h-12 rounded-full px-5 font-semibold" />
+              <Input 
+                type="text" 
+                inputMode="numeric"
+                value={sellHoursInput} 
+                onChange={(event) => {
+                  const value = event.target.value.replace(/[^0-9]/g, "")
+                  setSellHoursInput(value)
+                }} 
+                className="h-12 rounded-full px-5 font-semibold" 
+                placeholder={`Enter hours to sell (max ${maxSellHours})`} 
+              />
             </div>
             {!hasEnoughBalance && <p className="text-sm font-semibold text-[#073232]">You only have {maxSellHours.toLocaleString()} SC available.</p>}
             <QuoteBox quote={payoutQuote} mode="payout" />

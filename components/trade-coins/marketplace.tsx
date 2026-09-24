@@ -18,11 +18,13 @@ interface TradeCoinMarketplaceProps {
 }
 
 export function TradeCoinMarketplace({ userId }: TradeCoinMarketplaceProps) {
-  const [amount, setAmount] = useState(COIN_NAIRA_VALUE)
+  const [amountInput, setAmountInput] = useState("")
   const [quote, setQuote] = useState<CoinPaymentQuote | null>(null)
   const [balance, setBalance] = useState(0)
   const [isQuoting, setIsQuoting] = useState(true)
   const [isPaying, setIsPaying] = useState(false)
+
+  const amount = amountInput === "" ? COIN_NAIRA_VALUE : Math.max(COIN_NAIRA_VALUE, Number(amountInput) || COIN_NAIRA_VALUE)
 
   useEffect(() => {
     tradeCoinService.getUserBalance(userId).then((data) => setBalance(data.total_balance || 0)).catch(console.error)
@@ -71,7 +73,12 @@ export function TradeCoinMarketplace({ userId }: TradeCoinMarketplaceProps) {
           redirect_url: "/trade-coins",
         },
       })
-      window.location.href = payment.checkout_url
+      // Open checkout in a popup window so close/back button returns to app
+      const width = 600
+      const height = 700
+      const left = (window.innerWidth - width) / 2
+      const top = (window.innerHeight - height) / 2
+      window.open(payment.checkout_url, "flutterwave_checkout", `width=${width},height=${height},left=${left},top=${top}`)
     } catch (error: any) {
       toast.error(error?.message || "Could not initialize Trade Coin payment")
     } finally {
@@ -117,12 +124,15 @@ export function TradeCoinMarketplace({ userId }: TradeCoinMarketplaceProps) {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-[#073232]">Amount in Naira</label>
             <Input
-              type="number"
-              min={COIN_NAIRA_VALUE}
-              step={COIN_NAIRA_VALUE}
-              value={amount}
-              onChange={(event) => setAmount(Number(event.target.value) || COIN_NAIRA_VALUE)}
+              type="text"
+              inputMode="decimal"
+              value={amountInput}
+              onChange={(event) => {
+                const value = event.target.value.replace(/[^0-9]/g, "")
+                setAmountInput(value)
+              }}
               className="h-12 rounded-full border-gray-300 px-5 text-base font-semibold text-[#073232]"
+              placeholder={`Enter amount (minimum ${formatNaira(COIN_NAIRA_VALUE)})`}
             />
           </div>
 
