@@ -122,6 +122,11 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
   const [timeBankingHours, setTimeBankingHours] = useState("")
 
   const isService = targetListing.type === 'service'
+  const isPhysicalItem = targetListing.type === 'item'
+
+  // For physical items, we only allow listing items and trade coins
+  // Cash and service offerings don't apply to physical item trades
+  const showPhysicalItemsOnly = isPhysicalItem
 
   useEffect(() => {
     if (open && user) {
@@ -196,19 +201,35 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
   const addTradeCoinItem = async () => {
     const amount = parseInt(tradeCoinAmount)
     if (amount > 0) {
-      // Trade Coins settle against the single TC balance (STC bucket)
-      const hasBalance = await tradeCoinService.validateBalance(user.id, 'STC', amount)
-      if (!hasBalance) {
-        toast.error(`Insufficient Trade Coin (TC) balance`)
+      // Trade Coins settle against the single TC balance
+      // Check against the current balance state we fetched at dialog open
+      // Use total_balance for validation (not stc_balance which may not be populated)
+      if (!tradeCoinBalance) {
+        toast.error("Unable to verify Trade Coin balance. Please refresh and try again.")
         return
       }
 
-      setSelectedItems(prev => [...prev, {
-        type: 'trade_coin',
-        coin_type: 'STC',
-        trade_coin_amount: amount
-      }])
+      const availableBalance = tradeCoinBalance.total_balance || 0
+      if (amount > availableBalance) {
+        toast.error(
+          `Insufficient Trade Coin balance. You need ${amount} TC but only have ${availableBalance} TC.`
+        )
+        return
+      }
+
+      // Remove any existing trade coin items to avoid duplicates
+      setSelectedItems(prev => {
+        const withoutTC = prev.filter(item => item.type !== 'trade_coin')
+        return [...withoutTC, {
+          type: 'trade_coin',
+          coin_type: 'STC',
+          trade_coin_amount: amount
+        }]
+      })
       setTradeCoinAmount("")
+      toast.success(`Added ${amount} Trade Coins`)
+    } else if (amount === 0 && tradeCoinAmount.trim() !== '') {
+      toast.error('Please enter a valid amount greater than 0')
     }
   }
 
@@ -225,6 +246,96 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
 
   const removeItem = (index: number) => {
     setSelectedItems(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Calculate value of physical items only (for balancing physical item trades)
+  const calculatePhysicalItemsValue = (): number => {
+    return selectedItems
+      .filter(item => item.type === 'listing')
+      .reduce((total, item) => {
+        if (item.listing) {
+          return total + (item.listing.price || 0)
+        }
+        return total
+      }, 0)
+  }
+
+  // Get the Trade Coin balance from selected items
+  const getSelectedTradeCoinAmount = (): number => {
+    const tradeCoinItem = selectedItems.find(item => item.type === 'trade_coin')
+    return tradeCoinItem?.trade_coin_amount || 0
+  }
+
+  // Calculate required Trade Coins to balance the trade (for physical items)
+  const calculateRequiredTradeCoins = (): number => {
+    const targetValue = targetListing.price || 0
+    const physicalItemsValue = calculatePhysicalItemsValue()
+    const gap = targetValue - physicalItemsValue
+
+    if (gap > 0) {
+      // Gap exists, calculate TCs needed (1 TC = ₦1,000)
+      return Math.ceil(gap / 1000)
+    }
+
+    return 0
+  }
+
+  // Check if balancing is needed for physical item trades
+  const needsBalancing = (): boolean => {
+    if (!showPhysicalItemsOnly) return false
+    
+    const physicalItemsValue = calculatePhysicalItemsValue()
+    const targetValue = targetListing.price || 0
+    const gap = Math.abs(targetValue - physicalItemsValue)
+    
+    // Need balancing if gap is more than ₦500 (0.5 TC)
+    return gap > 500
+  }
+
+  // Get balancing suggestion
+  const getBalancingSuggestion = (): { required: number; current: number; shortage: number } => {
+    const requiredTCs = calculateRequiredTradeCoins()
+    const currentTCs = getSelectedTradeCoinAmount()
+    const shortage = Math.max(0, requiredTCs - currentTCs)
+
+    return { required: requiredTCs, current: currentTCs, shortage }
+  }
+
+  // Auto-balance with suggested Trade Coins
+  const autoBalanceWithTradeCoins = async () => {
+    const suggestedAmount = getBalancingSuggestion().required
+
+    if (suggestedAmount <= 0) {
+      toast.error("No balancing needed")
+      return
+    }
+
+    // Check if user has sufficient TC balance using state balance
+    // Use total_balance for validation (not stc_balance which may not be populated)
+    if (!tradeCoinBalance) {
+      toast.error("Unable to verify Trade Coin balance. Please refresh and try again.")
+      return
+    }
+
+    const availableBalance = tradeCoinBalance.total_balance || 0
+    if (suggestedAmount > availableBalance) {
+      toast.error(
+        `Insufficient Trade Coin balance. You need ${suggestedAmount} TC but only have ${availableBalance} TC. Top up your Trade Coins to proceed.`
+      )
+      return
+    }
+
+    // Remove any existing trade coin items and add the suggested amount
+    setSelectedItems(prev => {
+      const withoutTC = prev.filter(item => item.type !== 'trade_coin')
+      return [...withoutTC, {
+        type: 'trade_coin',
+        coin_type: 'STC',
+        trade_coin_amount: suggestedAmount
+      }]
+    })
+
+    toast.success(`Added ${suggestedAmount} Trade Coins to balance your offer`)
   }
 
   const calculateTotalValue = () => {
@@ -356,11 +467,46 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <ArrowsRightLeftIcon className="h-5 w-5" />
-            <span>Propose Trade</span>
+            <span>{showPhysicalItemsOnly ? "Trade Physical Items" : "Propose Trade"}</span>
           </DialogTitle>
+          {showPhysicalItemsOnly && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Select your items to trade. If the total value doesn't match, use Trade Coins to balance the difference.
+            </p>
+          )}
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Physical Item Trade Info Banner */}
+          {showPhysicalItemsOnly && (
+            <div className="rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 p-4">
+              <div className="flex space-x-3">
+                <div className="flex-shrink-0 pt-0.5">
+                  <svg className="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-sm text-blue-900">Physical Item Exchange</h4>
+                  <ul className="mt-2 text-xs text-blue-800 space-y-1">
+                    <li className="flex items-start space-x-2">
+                      <span className="text-blue-600 font-bold">1.</span>
+                      <span>Select your physical items from your listings</span>
+                    </li>
+                    <li className="flex items-start space-x-2">
+                      <span className="text-blue-600 font-bold">2.</span>
+                      <span>The system will show if you need Trade Coins to balance</span>
+                    </li>
+                    <li className="flex items-start space-x-2">
+                      <span className="text-blue-600 font-bold">3.</span>
+                      <span>Add Trade Coins to complete the fair trade</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Target Item */}
           <Card>
             <CardContent className="p-4">
@@ -394,8 +540,9 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
           {/* Your Offer */}
           <Card>
             <CardContent className="p-4">
-              <h3 className="font-medium text-foreground mb-3">You offer:</h3>
-              
+              <h3 className="font-medium text-foreground mb-3">
+                {showPhysicalItemsOnly ? "Your Items & Trade Coins:" : "You offer:"}
+              </h3>
               {/* Selected Items */}
               {selectedItems.length > 0 && (
                 <div className="space-y-2 mb-4">
@@ -482,12 +629,23 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                 </div>
               )}
 
+              {/* Empty State for Physical Items */}
+              {showPhysicalItemsOnly && selectedItems.length === 0 && (
+                <div className="text-center py-6 px-4 bg-slate-50 rounded-lg border border-dashed border-slate-300 mb-4">
+                  <ArchiveBoxIcon className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm text-slate-600 font-medium">No items selected yet</p>
+                  <p className="text-xs text-slate-500 mt-1">Choose from your listings below to start the trade</p>
+                </div>
+              )}
+
               {/* Add Items */}
               <div className="space-y-4">
                 {/* Add Your Listings */}
                 {userListings.length > 0 && (
                   <div>
-                    <Label className="text-sm font-medium">Add from your listings:</Label>
+                    <Label className="text-sm font-medium">
+                      {showPhysicalItemsOnly ? "Select items to trade:" : "Add from your listings:"}
+                    </Label>
                     <Select onValueChange={(value) => addListingItem(parseInt(value))}>
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select a listing" />
@@ -505,55 +663,68 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                   </div>
                 )}
 
-                {/* Add Cash */}
-                <div>
-                  <Label className="text-sm font-medium">Add cash:</Label>
-                  <div className="flex space-x-2 mt-1">
-                    <Input
-                      type="number"
-                      placeholder="Amount in ₦"
-                      value={cashAmount}
-                      onChange={(e) => setCashAmount(e.target.value)}
-                      min="0"
-                    />
-                    <Button onClick={addCashItem} variant="outline" size="sm">
-                      <PlusIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Add Service */}
-                <div>
-                  <Label className="text-sm font-medium">Offer a service:</Label>
-                  <div className="space-y-2 mt-1">
-                    <Input
-                      placeholder="Service description"
-                      value={serviceDescription}
-                      onChange={(e) => setServiceDescription(e.target.value)}
-                    />
-                    <div className="flex space-x-2">
+                {/* Add Cash - Hidden for physical items */}
+                {!showPhysicalItemsOnly && (
+                  <div>
+                    <Label className="text-sm font-medium">Add cash:</Label>
+                    <div className="flex space-x-2 mt-1">
                       <Input
                         type="number"
-                        placeholder="Hours"
-                        value={serviceHours}
-                        onChange={(e) => setServiceHours(e.target.value)}
+                        placeholder="Amount in ₦"
+                        value={cashAmount}
+                        onChange={(e) => setCashAmount(e.target.value)}
                         min="0"
-                        step="0.5"
                       />
-                      <Button onClick={addServiceItem} variant="outline" size="sm">
+                      <Button onClick={addCashItem} variant="outline" size="sm">
                         <PlusIcon className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {/* Add Service - Hidden for physical items */}
+                {!showPhysicalItemsOnly && (
+                  <div>
+                    <Label className="text-sm font-medium">Offer a service:</Label>
+                    <div className="space-y-2 mt-1">
+                      <Input
+                        placeholder="Service description"
+                        value={serviceDescription}
+                        onChange={(e) => setServiceDescription(e.target.value)}
+                      />
+                      <div className="flex space-x-2">
+                        <Input
+                          type="number"
+                          placeholder="Hours"
+                          value={serviceHours}
+                          onChange={(e) => setServiceHours(e.target.value)}
+                          min="0"
+                          step="0.5"
+                        />
+                        <Button onClick={addServiceItem} variant="outline" size="sm">
+                          <PlusIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Add Trade Coins */}
                 <div>
-                  <Label className="text-sm font-medium">Pay with Trade Coins:</Label>
+                  <Label className="text-sm font-medium">
+                    {showPhysicalItemsOnly ? "Balance with Trade Coins:" : "Pay with Trade Coins:"}
+                  </Label>
                   {tradeCoinBalance && (
                     <div className="flex items-center space-x-2 mt-1 mb-2 text-xs text-muted-foreground">
                       <span>Balance:</span>
                       <span className="font-medium">{tradeCoinBalance.total_balance} TC</span>
+                    </div>
+                  )}
+                  {showPhysicalItemsOnly && needsBalancing() && (
+                    <div className="flex items-center space-x-2 mt-1 mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
+                      <span className="text-xs text-amber-800">
+                        Suggested: {getBalancingSuggestion().required} TC to balance
+                      </span>
                     </div>
                   )}
                   <div className="space-y-2 mt-1">
@@ -600,22 +771,53 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
               <CardContent className="p-4">
                 <h3 className="font-medium text-foreground mb-3">Trade Value</h3>
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Their item:</span>
-                    <span className="font-medium">{formatNaira(targetValue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Your offer:</span>
-                    <span className="font-medium">{formatNaira(proposedValue)}</span>
-                  </div>
-                  <div className="flex justify-between border-t pt-2">
-                    <span className="text-muted-foreground">Difference:</span>
-                    <span className={`font-medium ${
-                      valueDifference > 0 ? 'text-green-600' : valueDifference < 0 ? 'text-red-600' : 'text-muted-foreground'
-                    }`}>
-                      {valueDifference > 0 ? '+' : ''}{formatNaira(Math.abs(valueDifference))}
-                    </span>
-                  </div>
+                  {showPhysicalItemsOnly ? (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Item you want:</span>
+                        <span className="font-medium">{formatNaira(targetValue)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Your physical items:</span>
+                        <span className="font-medium">{formatNaira(calculatePhysicalItemsValue())}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Trade Coins offered:</span>
+                        <span className="font-medium text-[#073232]">{getSelectedTradeCoinAmount()} TC (₦{formatNaira(getSelectedTradeCoinAmount() * 1000)})</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="text-muted-foreground">Total offer:</span>
+                        <span className="font-medium">{formatNaira(proposedValue)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Difference:</span>
+                        <span className={`font-medium ${
+                          valueDifference > 0 ? 'text-green-600' : valueDifference < 0 ? 'text-red-600' : 'text-muted-foreground'
+                        }`}>
+                          {valueDifference > 0 ? '+' : ''}{formatNaira(Math.abs(valueDifference))}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Their item:</span>
+                        <span className="font-medium">{formatNaira(targetValue)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Your offer:</span>
+                        <span className="font-medium">{formatNaira(proposedValue)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="text-muted-foreground">Difference:</span>
+                        <span className={`font-medium ${
+                          valueDifference > 0 ? 'text-green-600' : valueDifference < 0 ? 'text-red-600' : 'text-muted-foreground'
+                        }`}>
+                          {valueDifference > 0 ? '+' : ''}{formatNaira(Math.abs(valueDifference))}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <Badge 
                   variant={isValueFair ? "default" : "secondary"} 
@@ -623,6 +825,55 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
                 >
                   {isValueFair ? "Fair Trade" : "Value Difference"}
                 </Badge>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Trade Coin Balancing Suggestion (Physical Items Only) */}
+          {showPhysicalItemsOnly && selectedItems.length > 0 && needsBalancing() && (
+            <Card className="border-amber-200 bg-amber-50">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div className="flex items-center justify-center h-6 w-6 rounded-full bg-amber-100">
+                        <span className="text-amber-600 font-bold text-sm">!</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-amber-900">Value Gap Detected</p>
+                      <p className="text-xs text-amber-700 mt-1">
+                        Your items are worth {formatNaira(calculatePhysicalItemsValue())} but the target item is worth {formatNaira(targetValue)}.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Recommended Trade Coins:</span>
+                      <span className="font-medium text-[#073232]">{getBalancingSuggestion().required} TC</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Currently offering:</span>
+                      <span className="font-medium text-[#073232]">{getSelectedTradeCoinAmount()} TC</span>
+                    </div>
+                    {getBalancingSuggestion().shortage > 0 && (
+                      <div className="flex justify-between text-sm border-t pt-2">
+                        <span className="text-gray-600">Still need:</span>
+                        <span className="font-medium text-red-600">{getBalancingSuggestion().shortage} TC</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {getBalancingSuggestion().shortage > 0 && (
+                    <Button
+                      className="w-full bg-amber-600 hover:bg-amber-700"
+                      onClick={autoBalanceWithTradeCoins}
+                    >
+                      Add {getBalancingSuggestion().shortage} Trade Coins
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}
