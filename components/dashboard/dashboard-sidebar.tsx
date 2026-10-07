@@ -57,7 +57,7 @@ const quickActions = [
     primary: true
   },
   {
-    href: "/time-banking",
+    href: "/time-banking/create",
     label: "Request Help",
     icon: HandHeart,
     color: "border-gray-200 hover:bg-gray-50 text-gray-700",

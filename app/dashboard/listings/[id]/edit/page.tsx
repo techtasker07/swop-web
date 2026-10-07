@@ -1,9 +1,8 @@
 "use client"
 
 import React from "react"
-
-import { useState, useEffect, use } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -36,23 +35,16 @@ const categories = [
   { id: "other", name: "Other" },
 ]
 
-const statusOptions = [
-  { id: "active", name: "Active" },
-  { id: "traded", name: "Traded" },
-  { id: "inactive", name: "Inactive" },
-]
-
-interface EditListingPageProps {
-  params: Promise<{ id: string }>
-}
-
-export default function EditListingPage({ params }: EditListingPageProps) {
-  const { id } = use(params)
+export default function EditListingPage() {
+  const router = useRouter()
+  const params = useParams()
+  const id = params.id as string
+  
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [lookingFor, setLookingFor] = useState("")
   const [category, setCategory] = useState("")
-  const [status, setStatus] = useState("active")
+  const [isAvailable, setIsAvailable] = useState(true)
   const [location, setLocation] = useState("")
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [imageInput, setImageInput] = useState("")
@@ -60,41 +52,65 @@ export default function EditListingPage({ params }: EditListingPageProps) {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  
   const supabase = createClient()
 
   useEffect(() => {
+    if (!id) return
+
     const loadListing = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push("/auth/login")
-        return
+      try {
+        setLoading(true)
+        setError(null)
+
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        
+        if (!authUser) {
+          console.log("No user found, redirecting to login")
+          router.push("/auth/login")
+          return
+        }
+
+        setUser(authUser)
+
+        console.log("Fetching listing with id:", id, "for user:", authUser.id)
+
+        const { data: listing, error: fetchError } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("id", parseInt(id))
+          .eq("seller_id", authUser.id)
+          .single()
+
+        console.log("Fetch result:", { listing, fetchError })
+
+        if (fetchError) {
+          console.error("Database error:", fetchError)
+          setError(`Could not load listing: ${fetchError.message}`)
+          return
+        }
+
+        if (!listing) {
+          console.error("No listing found")
+          setError("Listing not found. Make sure you own this listing.")
+          return
+        }
+
+        console.log("Listing loaded successfully:", listing)
+
+        setTitle(listing.title || "")
+        setDescription(listing.description || "")
+        setLookingFor(listing.looking_for || "")
+        setCategory(listing.category_id ? listing.category_id.toString() : "")
+        setIsAvailable(listing.is_available ?? true)
+        setLocation(listing.location || "")
+        setImageUrls(listing.images || [])
+        setLoading(false)
+      } catch (err) {
+        console.error("Exception in loadListing:", err)
+        setError(`An unexpected error occurred: ${err}`)
       }
-
-      const { data: listing } = await supabase
-        .from("listings")
-        .select(`
-          *,
-          categories (slug)
-        `)
-        .eq("id", id)
-        .eq("user_id", user.id)
-        .single()
-
-      if (!listing) {
-        router.push("/dashboard/listings")
-        return
-      }
-
-      setTitle(listing.title)
-      setDescription(listing.description)
-      setLookingFor(listing.looking_for || "")
-      setCategory(listing.categories?.slug || "")
-      setStatus(listing.status)
-      setLocation(listing.location || "")
-      setImageUrls(listing.images || [])
-      setLoading(false)
     }
 
     loadListing()
@@ -116,59 +132,86 @@ export default function EditListingPage({ params }: EditListingPageProps) {
     setError(null)
     setSaving(true)
 
-    // Get category ID
-    const { data: categoryData } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", category)
-      .single()
+    try {
+      // Convert category slug to ID or use directly if it's already an ID
+      let categoryId = category ? parseInt(category) : null
 
-    const { error: updateError } = await supabase
-      .from("listings")
-      .update({
-        title,
-        description,
-        looking_for: lookingFor || null,
-        category_id: categoryData?.id,
-        status,
-        location: location || null,
-        images: imageUrls.length > 0 ? imageUrls : null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
+      const { error: updateError } = await supabase
+        .from("listings")
+        .update({
+          title,
+          description,
+          looking_for: lookingFor || null,
+          category_id: categoryId,
+          is_available: isAvailable,
+          location: location || null,
+          images: imageUrls.length > 0 ? imageUrls : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", parseInt(id))
 
-    if (updateError) {
-      setError(updateError.message)
+      if (updateError) {
+        setError(updateError.message)
+        setSaving(false)
+        return
+      }
+
+      router.push("/dashboard/listings")
+      router.refresh()
+    } catch (err) {
+      setError(`Error saving listing: ${err}`)
       setSaving(false)
-      return
     }
-
-    router.push("/dashboard/listings")
-    router.refresh()
   }
 
   const handleDelete = async () => {
     setDeleting(true)
 
-    const { error: deleteError } = await supabase
-      .from("listings")
-      .delete()
-      .eq("id", id)
+    try {
+      const { error: deleteError } = await supabase
+        .from("listings")
+        .delete()
+        .eq("id", parseInt(id))
 
-    if (deleteError) {
-      setError(deleteError.message)
+      if (deleteError) {
+        setError(deleteError.message)
+        setDeleting(false)
+        return
+      }
+
+      router.push("/dashboard/listings")
+      router.refresh()
+    } catch (err) {
+      setError(`Error deleting listing: ${err}`)
       setDeleting(false)
-      return
     }
-
-    router.push("/dashboard/listings")
-    router.refresh()
   }
 
-  if (loading) {
+  if (loading && !error) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground">Loading listing...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error && loading) {
+    return (
+      <div className="space-y-4 max-w-md mx-auto py-16">
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-800">Error Loading Listing</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-800 mb-4">{error}</p>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/listings">Back to My Listings</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -282,22 +325,6 @@ export default function EditListingPage({ params }: EditListingPageProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={status} onValueChange={setStatus} disabled={saving}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((opt) => (
-                        <SelectItem key={opt.id} value={opt.id}>
-                          {opt.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
@@ -307,6 +334,23 @@ export default function EditListingPage({ params }: EditListingPageProps) {
                     placeholder="City, State"
                     disabled={saving}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="available">Availability</Label>
+                  <div className="flex items-center space-x-2 border border-gray-300 rounded-md p-2.5">
+                    <input
+                      id="available"
+                      type="checkbox"
+                      checked={isAvailable}
+                      onChange={(e) => setIsAvailable(e.target.checked)}
+                      disabled={saving}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="available" className="mb-0 cursor-pointer">
+                      {isAvailable ? "Active" : "Inactive"}
+                    </Label>
+                  </div>
                 </div>
               </div>
 

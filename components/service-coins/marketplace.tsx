@@ -11,15 +11,15 @@ import { createFlutterwavePayment } from "@/lib/services/flutterwave-service"
 import { createClient } from "@/lib/supabase/client"
 import { formatNaira } from "@/lib/utils/currency"
 import { toast } from "sonner"
-import { Banknote, Clock3, Loader2, Send, ShieldCheck, Wrench } from "lucide-react"
+import { Banknote, Clock3, Loader2, Send, ShieldCheck, ShoppingCart, Wrench } from "lucide-react"
 
 interface ServiceCoinMarketplaceProps {
   userId: string
 }
 
 export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) {
-  const [hoursInput, setHoursInput] = useState("")
-  const [sellHoursInput, setSellHoursInput] = useState("")
+  const [amountInput, setAmountInput] = useState("")
+  const [sellAmountInput, setSellAmountInput] = useState("")
   const [buyQuote, setBuyQuote] = useState<CoinPaymentQuote | null>(null)
   const [payoutQuote, setPayoutQuote] = useState<CoinPaymentQuote | null>(null)
   const [balance, setBalance] = useState(0)
@@ -28,13 +28,12 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
   const [bankName, setBankName] = useState("")
   const [isPaying, setIsPaying] = useState(false)
   const [isSelling, setIsSelling] = useState(false)
+  const [isQuotingBuy, setIsQuotingBuy] = useState(true)
+  const [isQuotingSell, setIsQuotingSell] = useState(true)
 
-  const maxSellHours = Math.max(0, Math.floor(balance))
-  const hours = hoursInput === "" ? 1 : Math.max(1, Number(hoursInput) || 1)
-  const sellHours = sellHoursInput === "" ? 1 : Math.max(1, Math.min(maxSellHours, Number(sellHoursInput) || 1))
-  
-  const buyAmount = useMemo(() => Math.max(1, hours) * COIN_NAIRA_VALUE, [hours])
-  const sellAmount = useMemo(() => Math.max(1, sellHours) * COIN_NAIRA_VALUE, [sellHours])
+  const maxSellAmount = Math.max(0, balance * COIN_NAIRA_VALUE)
+  const buyAmount = amountInput === "" ? COIN_NAIRA_VALUE : Math.max(COIN_NAIRA_VALUE, Number(amountInput) || COIN_NAIRA_VALUE)
+  const sellAmount = sellAmountInput === "" ? COIN_NAIRA_VALUE : Math.max(COIN_NAIRA_VALUE, Math.min(maxSellAmount, Number(sellAmountInput) || COIN_NAIRA_VALUE))
 
   useEffect(() => {
     serviceCoinService
@@ -45,17 +44,20 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
 
   useEffect(() => {
     let active = true
-    coinPaymentPricingService.quotePurchase(userId, buyAmount).then((quote) => { if (active) setBuyQuote(quote) }).catch(console.error)
+    setIsQuotingBuy(true)
+    coinPaymentPricingService.quotePurchase(userId, buyAmount).then((quote) => { if (active) setBuyQuote(quote) }).catch(console.error).finally(() => { if (active) setIsQuotingBuy(false) })
     return () => { active = false }
   }, [userId, buyAmount])
 
   useEffect(() => {
     let active = true
-    coinPaymentPricingService.quotePayout(userId, sellAmount).then((quote) => { if (active) setPayoutQuote(quote) }).catch(console.error)
+    setIsQuotingSell(true)
+    coinPaymentPricingService.quotePayout(userId, sellAmount).then((quote) => { if (active) setPayoutQuote(quote) }).catch(console.error).finally(() => { if (active) setIsQuotingSell(false) })
     return () => { active = false }
   }, [userId, sellAmount])
 
-  const hasEnoughBalance = sellHours <= maxSellHours
+  const value = useMemo(() => balance * COIN_NAIRA_VALUE, [balance])
+  const hasEnoughBalance = sellAmount <= maxSellAmount
 
   const handleBuy = async () => {
     if (!buyQuote) return
@@ -63,7 +65,6 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
     try {
       const orderId = await serviceCoinService.createValueBuyOrder({
         userId,
-        hours,
         coins: buyQuote.coins,
         baseAmount: buyQuote.baseAmount,
         serviceFee: buyQuote.serviceFee,
@@ -77,12 +78,11 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
         amount: buyQuote.totalPayable,
         email: user?.email || "customer@swopify.app",
         name: user?.user_metadata?.display_name || user?.email || "Swopify user",
-        description: `Buy ${hours} Service Coin hour${hours === 1 ? "" : "s"}`,
+        description: `Buy ${buyQuote.coins} Service Coin${buyQuote.coins === 1 ? "" : "s"}`,
         metadata: {
           kind: "service_coin",
           order_id: orderId,
           coin_type: "SC",
-          hours,
           coins: buyQuote.coins,
           base_amount: buyQuote.baseAmount,
           user_id: userId,
@@ -116,10 +116,10 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
     setIsSelling(true)
     let orderId: string | null = null
     try {
+      const coins = Math.floor(sellAmount / COIN_NAIRA_VALUE)
       orderId = await serviceCoinService.createPayoutOrder({
         userId,
-        hours: sellHours,
-        coins: payoutQuote.coins,
+        coins,
         baseAmount: payoutQuote.baseAmount,
         serviceFee: payoutQuote.serviceFee,
         flutterwaveCharge: payoutQuote.flutterwaveCharge,
@@ -159,38 +159,67 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
             <div className="rounded-[1.25rem] bg-[#32cd32] p-3 text-[#073232]"><Wrench className="h-6 w-6" /></div>
             <div>
               <h2 className="text-2xl font-bold">Service Coin Wallet</h2>
-              <p className="mt-1 text-sm text-white/70">1 hour = 1 SC = {formatNaira(COIN_NAIRA_VALUE)}. SC is sellable after deductions.</p>
+              <p className="mt-1 text-sm text-white/70">1 SC = {formatNaira(COIN_NAIRA_VALUE)}. Service Coin is value-based and sellable.</p>
             </div>
           </div>
           <Badge className="w-fit rounded-full bg-white text-[#073232]">Available {balance.toLocaleString()} SC</Badge>
         </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <Metric label="Service Coin" value={`${balance.toLocaleString()} SC`} />
-          <Metric label="Wallet Value" value={formatNaira(balance * COIN_NAIRA_VALUE)} />
-          <Metric label="Earned Hours" value={`${balance.toLocaleString()} hrs`} />
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-[1.5rem] border border-[#32cd32]/40 bg-[#001f1f]/50 p-4">
+            <p className="text-xs font-semibold uppercase text-white/60">Total Balance</p>
+            <p className="mt-2 text-3xl font-bold">{balance.toLocaleString()} <span className="text-base text-[#32cd32]">SC</span></p>
+          </div>
+          <div className="rounded-[1.5rem] border border-[#32cd32]/40 bg-[#001f1f]/50 p-4">
+            <p className="text-xs font-semibold uppercase text-white/60">Wallet Value</p>
+            <p className="mt-2 text-3xl font-bold">{formatNaira(value)}</p>
+          </div>
         </div>
       </section>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Card className="rounded-[2rem] border-gray-200 bg-white shadow-lg">
-          <CardContent className="space-y-4 p-5">
-            <PanelTitle icon={<Clock3 className="h-5 w-5" />} title="Buy Service Coin" body="Purchase service hours through Flutterwave checkout." />
+          <CardContent className="space-y-5 p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-[1.25rem] bg-[#32cd32] p-3 text-[#073232]"><ShoppingCart className="h-5 w-5" /></div>
+              <div>
+                <h3 className="text-xl font-bold text-[#073232]">Buy Service Coin</h3>
+                <p className="text-sm text-[#073232]/70">Minimum purchase is {formatNaira(COIN_NAIRA_VALUE)}. Fees follow your active {buyQuote?.audience.toUpperCase() || "P2P"} plan.</p>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#073232]">Hours to buy</label>
-              <Input 
-                type="text" 
-                inputMode="numeric"
-                value={hoursInput} 
+              <label className="text-sm font-semibold text-[#073232]">Amount in Naira</label>
+              <Input
+                type="text"
+                inputMode="decimal"
+                value={amountInput}
                 onChange={(event) => {
                   const value = event.target.value.replace(/[^0-9]/g, "")
-                  setHoursInput(value)
-                }} 
-                className="h-12 rounded-full px-5 font-semibold" 
-                placeholder="Enter hours to buy (1+)" 
+                  setAmountInput(value)
+                }}
+                className="h-12 rounded-full border-gray-300 px-5 text-base font-semibold text-[#073232]"
+                placeholder={`Enter amount (minimum ${formatNaira(COIN_NAIRA_VALUE)})`}
               />
             </div>
-            <QuoteBox quote={buyQuote} mode="buy" />
-            <Button onClick={handleBuy} disabled={!buyQuote || isPaying} className="h-12 w-full rounded-full bg-[#32cd32] font-bold text-[#073232] hover:bg-[#28b928]">
+
+            <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50 p-4 text-sm text-[#073232]">
+              {isQuotingBuy || !buyQuote ? <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Calculating...</div> : (
+                <div className="space-y-2">
+                  <Row label="Service Coin value" value={formatNaira(buyQuote.baseAmount)} />
+                  <Row label={`Swopify ${buyQuote.plan.name} fee (${buyQuote.serviceFeePercent}%)`} value={`+${formatNaira(buyQuote.serviceFee)}`} />
+                  <Row label="Flutterwave charge (2%)" value={`+${formatNaira(buyQuote.flutterwaveCharge)}`} />
+                  <Row label="VAT on Flutterwave charge (7%)" value={`+${formatNaira(buyQuote.flutterwaveVat)}`} />
+                  <div className="border-t border-gray-200 pt-3"><Row label="Total before payment" value={formatNaira(buyQuote.totalPayable)} strong /></div>
+                  <div className="border-t border-gray-200 pt-3"><Row label="Coins to receive" value={`${buyQuote.coins.toLocaleString()} SC`} strong /></div>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-[1.5rem] bg-[#073232] p-4 text-sm text-white">
+              <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-[#32cd32]" /><span>Flutterwave checkout collects payment securely, then Swopify verifies the transaction and credits your wallet.</span></div>
+            </div>
+
+            <Button onClick={handleBuy} disabled={!buyQuote || isPaying || isQuotingBuy} className="h-12 w-full rounded-full bg-[#32cd32] text-base font-bold text-[#073232] hover:bg-[#28b928]">
               {isPaying ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Opening checkout...</> : <><Banknote className="mr-2 h-5 w-5" />Pay {buyQuote ? formatNaira(buyQuote.totalPayable) : ""}</>}
             </Button>
           </CardContent>
@@ -198,29 +227,49 @@ export function ServiceCoinMarketplace({ userId }: ServiceCoinMarketplaceProps) 
 
         <Card className="rounded-[2rem] border-gray-200 bg-white shadow-lg">
           <CardContent className="space-y-4 p-5">
-            <PanelTitle icon={<Send className="h-5 w-5" />} title="Sell Service Coin" body="Enter the bank account where Flutterwave should send your payout." />
+            <div className="flex items-start gap-3">
+              <div className="rounded-[1.25rem] bg-[#32cd32] p-3 text-[#073232]"><Send className="h-5 w-5" /></div>
+              <div>
+                <h3 className="text-xl font-bold text-[#073232]">Sell Service Coin</h3>
+                <p className="text-sm text-[#073232]/70">Enter the bank account where Flutterwave should send your payout.</p>
+              </div>
+            </div>
+
             <div className="grid gap-3">
               <Input value={accountName} onChange={(event) => setAccountName(event.target.value)} placeholder="Account name" className="h-12 rounded-full px-5" />
               <Input value={accountNumber} onChange={(event) => setAccountNumber(event.target.value)} placeholder="Account number" className="h-12 rounded-full px-5" />
               <Input value={bankName} onChange={(event) => setBankName(event.target.value)} placeholder="Bank name" className="h-12 rounded-full px-5" />
               <Input 
                 type="text" 
-                inputMode="numeric"
-                value={sellHoursInput} 
+                inputMode="decimal"
+                value={sellAmountInput} 
                 onChange={(event) => {
                   const value = event.target.value.replace(/[^0-9]/g, "")
-                  setSellHoursInput(value)
+                  setSellAmountInput(value)
                 }} 
                 className="h-12 rounded-full px-5 font-semibold" 
-                placeholder={`Enter hours to sell (max ${maxSellHours})`} 
+                placeholder={`Enter amount to sell (max ${formatNaira(maxSellAmount)})`} 
               />
             </div>
-            {!hasEnoughBalance && <p className="text-sm font-semibold text-[#073232]">You only have {maxSellHours.toLocaleString()} SC available.</p>}
-            <QuoteBox quote={payoutQuote} mode="payout" />
+            {!hasEnoughBalance && <p className="text-sm font-semibold text-[#073232]">You only have {formatNaira(maxSellAmount)} available.</p>}
+
+            <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50 p-4 text-sm text-[#073232]">
+              {isQuotingSell || !payoutQuote ? <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Calculating...</div> : (
+                <div className="space-y-2">
+                  <Row label="Service coin value" value={formatNaira(payoutQuote.baseAmount)} />
+                  <Row label={`Swopify ${payoutQuote.plan.name} fee (${payoutQuote.serviceFeePercent}%)`} value={`-${formatNaira(payoutQuote.serviceFee)}`} />
+                  <Row label="Flutterwave transfer charge (0.2%)" value={`-${formatNaira(payoutQuote.flutterwaveCharge)}`} />
+                  <div className="border-t border-gray-200 pt-3"><Row label="Estimated payout" value={formatNaira(payoutQuote.netPayout)} strong /></div>
+                  <div className="border-t border-gray-200 pt-3"><Row label="Coins to sell" value={`${payoutQuote.coins.toLocaleString()} SC`} strong /></div>
+                </div>
+              )}
+            </div>
+
             <div className="rounded-[1.5rem] bg-[#073232] p-4 text-sm text-white">
               <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-[#32cd32]" /><span>Swopify deducts your plan fee and Flutterwave 0.2% transfer charge before sending the payout.</span></div>
             </div>
-            <Button onClick={handleSell} disabled={!payoutQuote || isSelling || !hasEnoughBalance} className="h-12 w-full rounded-full bg-[#073232] font-bold text-white hover:bg-[#0b4444]">
+
+            <Button onClick={handleSell} disabled={!payoutQuote || isSelling || !hasEnoughBalance || isQuotingSell} className="h-12 w-full rounded-full bg-[#073232] font-bold text-white hover:bg-[#0b4444]">
               {isSelling ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Requesting payout...</> : <>Request {payoutQuote ? formatNaira(payoutQuote.netPayout) : ""} payout</>}
             </Button>
           </CardContent>

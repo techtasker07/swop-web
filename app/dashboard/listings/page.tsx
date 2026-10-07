@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Eye, Heart, Package } from "lucide-react"
+import { Plus, Eye, Heart, Package, Edit2, Layers } from "lucide-react"
 import { formatNaira } from "@/lib/utils/currency"
 import { formatDistanceToNow } from "date-fns"
 import Image from "next/image"
@@ -36,184 +36,187 @@ export default async function MyListingsPage() {
   const inactiveListings = listings?.filter(listing => !listing.is_available) || []
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {/* Header - Responsive */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#073232]">My Listings</h1>
-          <p className="text-muted-foreground text-sm sm:text-base mt-1">
-            Manage your items and services available for trade
-          </p>
+    <div className="space-y-8">
+      {/* Hero Header Section */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#073232] via-[#0a4a4a] to-[#073232] p-8 sm:p-12 text-white shadow-lg">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#32cd32]/5 rounded-full -mr-48 -mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#32cd32]/5 rounded-full -ml-36 -mb-36"></div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 bg-[#32cd32]/20 rounded-xl flex items-center justify-center">
+                <Layers className="h-6 w-6 text-[#32cd32]" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold">My Listings</h1>
+                <p className="text-white/70 text-sm mt-1">Manage and monitor your trade items</p>
+              </div>
+            </div>
+          </div>
+          <Button asChild className="bg-[#32cd32] hover:bg-[#28a428] text-[#073232] font-semibold h-12 px-6 shadow-lg hover:shadow-xl transition-all duration-300 sm:w-auto w-full">
+            <Link href="/dashboard/listings/new">
+              <Plus className="h-5 w-5 mr-2" />
+              Create Listing
+            </Link>
+          </Button>
         </div>
-        <Button asChild className="bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#084040] hover:to-[#073232] w-full sm:w-auto">
-          <Link href="/dashboard/listings/new">
-            <Plus className="h-4 w-4 mr-2" />
-            New Listing
-          </Link>
-        </Button>
       </div>
 
-      {/* Stats - Enhanced responsive */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-3">
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-3 sm:p-4 md:p-6">
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-[#073232]/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[#073232]" />
-              </div>
-              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#073232]">{listings?.length || 0}</div>
-              <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Total Listings</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-3 sm:p-4 md:p-6">
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-[#32cd32]/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[#32cd32]" />
-              </div>
-              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-[#32cd32]">{activeListings.length}</div>
-              <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Active</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-3 sm:p-4 md:p-6">
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-gray-600" />
-              </div>
-              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-600">{inactiveListings.length}</div>
-              <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Inactive</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Active Listings - Enhanced responsive */}
+      {/* Active Listings Section */}
       {activeListings.length > 0 && (
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-[#32cd32]/10 border-b border-gray-200 p-4 sm:p-6">
-            <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
-              <span className="text-[#073232]">Active Listings</span>
-              <Badge className="bg-[#32cd32] text-white hover:bg-[#28a428]">{activeListings.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {activeListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-0.5 bg-gradient-to-r from-[#32cd32] to-transparent rounded"></div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-[#32cd32]/5 rounded-full border border-[#32cd32]/20">
+              <div className="w-3 h-3 bg-[#32cd32] rounded-full"></div>
+              <span className="font-semibold text-[#073232]">Active</span>
+              <Badge className="bg-[#32cd32] text-white hover:bg-[#28a428] ml-1">{activeListings.length}</Badge>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex-1 h-0.5 bg-gradient-to-l from-[#32cd32] to-transparent rounded"></div>
+          </div>
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {activeListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} isActive={true} />
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Inactive Listings - Enhanced responsive */}
+      {/* Inactive Listings Section */}
       {inactiveListings.length > 0 && (
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gray-50 border-b border-gray-200 p-4 sm:p-6">
-            <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
-              <span className="text-[#073232]">Inactive Listings</span>
-              <Badge variant="outline" className="border-gray-300">{inactiveListings.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {inactiveListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-0.5 bg-gradient-to-r from-gray-300 to-transparent rounded"></div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-200">
+              <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+              <span className="font-semibold text-gray-700">Inactive</span>
+              <Badge variant="outline" className="border-gray-300 text-gray-600 ml-1">{inactiveListings.length}</Badge>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex-1 h-0.5 bg-gradient-to-l from-gray-300 to-transparent rounded"></div>
+          </div>
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {inactiveListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} isActive={false} />
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Empty State - Enhanced responsive */}
+      {/* Empty State */}
       {(!listings || listings.length === 0) && (
-        <Card className="border-0 shadow-lg">
-          <CardContent className="py-12 sm:py-16 text-center px-4">
-            <div className="mx-auto mb-4 sm:mb-6 h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-[#32cd32]/10 flex items-center justify-center">
-              <Plus className="h-8 w-8 sm:h-10 sm:w-10 text-[#32cd32]" />
+        <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 py-16 px-6 text-center">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#32cd32]/5 rounded-full -mr-32 -mt-32"></div>
+          <div className="relative z-10 space-y-4">
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-[#32cd32]/10">
+              <Package className="h-10 w-10 text-[#32cd32]" />
             </div>
-            <h3 className="text-lg sm:text-xl font-medium text-[#073232] mb-2">No listings yet</h3>
-            <p className="text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base max-w-md mx-auto">
-              Create your first listing to start trading with the community
-            </p>
-            <Button asChild className="bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#084040] hover:to-[#073232] w-full sm:w-auto">
-              <Link href="/dashboard/listings/new">Create Your First Listing</Link>
+            <div>
+              <h3 className="text-xl font-bold text-[#073232] mb-2">No listings yet</h3>
+              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                Start by creating your first listing to begin trading with the community
+              </p>
+            </div>
+            <Button asChild className="bg-gradient-to-r from-[#073232] to-[#0a4a4a] hover:from-[#084040] hover:to-[#073232] h-11 px-8">
+              <Link href="/dashboard/listings/new">
+                <Plus className="h-5 w-5 mr-2" />
+                Create Your First Listing
+              </Link>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   )
 }
 
-function ListingCard({ listing }: { listing: any }) {
-  // Get primary image with proper fallback logic (consistent with main ListingCard)
+function ListingCard({ listing, isActive }: { listing: any; isActive: boolean }) {
+  // Get primary image with proper fallback logic
   const primaryImage = listing.listing_images?.find((img: any) => img.is_primary)?.url || 
                       listing.listing_images?.[0]?.url || 
                       listing.images?.[0] || 
                       null
 
   return (
-    <Link href={`/listings/${listing.id}`}>
-      <div className="group cursor-pointer rounded-lg border border-gray-200 bg-card p-3 sm:p-4 transition-all hover:shadow-lg hover:-translate-y-1 duration-300">
-        <div className="aspect-square relative mb-3 overflow-hidden rounded-md bg-muted">
+    <div className="group relative rounded-2xl overflow-hidden bg-white border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 flex flex-col h-full">
+      {/* Image Section */}
+      <Link href={`/listings/${listing.id}`}>
+        <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
           {primaryImage ? (
             <Image
               src={primaryImage}
               alt={listing.title}
               fill
-              className="object-cover transition-transform group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             />
           ) : (
             <div className="flex h-full items-center justify-center">
               <Package className="h-12 w-12 text-gray-300" />
             </div>
           )}
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-medium text-sm sm:text-base text-foreground line-clamp-2 group-hover:text-[#32cd32] transition-colors">
-              {listing.title}
-            </h3>
+          
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          {/* Status Badge - Top Right */}
+          <div className="absolute top-3 right-3 z-10">
             <Badge 
-              className={`ml-2 text-[10px] sm:text-xs whitespace-nowrap ${
-                listing.is_available 
-                  ? "bg-[#32cd32] text-white hover:bg-[#28a428]" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              className={`backdrop-blur-sm ${
+                isActive 
+                  ? "bg-[#32cd32]/90 text-white shadow-lg" 
+                  : "bg-gray-600/90 text-white shadow-lg"
               }`}
             >
-              {listing.is_available ? "Active" : "Inactive"}
+              {isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
-          
-          {listing.price > 0 && (
-            <p className="text-sm sm:text-base font-semibold text-[#32cd32]">
-              {formatNaira(listing.price)}
-            </p>
-          )}
-          
-          <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex items-center space-x-1">
-                <Eye className="h-3 w-3" />
-                <span>{listing.view_count || 0}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Heart className="h-3 w-3" />
-                <span>{listing._count?.favorites || 0}</span>
-              </div>
-            </div>
-            <span className="hidden sm:inline">
-              {formatDistanceToNow(new Date(listing.created_at), { addSuffix: true })}
-            </span>
+        </div>
+      </Link>
+      
+      {/* Content Section */}
+      <div className="p-4 sm:p-5 space-y-3 flex flex-col flex-1">
+        {/* Title */}
+        <Link href={`/listings/${listing.id}`}>
+          <h3 className="font-semibold text-sm sm:text-base text-[#073232] line-clamp-2 group-hover:text-[#32cd32] transition-colors cursor-pointer">
+            {listing.title}
+          </h3>
+        </Link>
+        
+        {/* Price */}
+        {listing.price > 0 && (
+          <p className="text-base sm:text-lg font-bold text-[#32cd32]">
+            {formatNaira(listing.price)}
+          </p>
+        )}
+        
+        {/* Stats */}
+        <div className="flex gap-4 text-[10px] sm:text-xs text-gray-500 py-2 border-t border-b border-gray-100">
+          <div className="flex items-center gap-1 hover:text-[#073232] transition-colors cursor-default">
+            <Eye className="h-3.5 w-3.5" />
+            <span className="font-medium">{listing.view_count || 0}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-[#32cd32] transition-colors cursor-default">
+            <Heart className="h-3.5 w-3.5" />
+            <span className="font-medium">{listing._count?.favorites || 0}</span>
+          </div>
+          <div className="ml-auto text-gray-400 text-[9px]">
+            {formatDistanceToNow(new Date(listing.created_at), { addSuffix: true })}
           </div>
         </div>
+
+        {/* Edit Button */}
+        <Button 
+          asChild
+          className="w-full bg-[#073232] hover:bg-[#0a4a4a] text-white font-medium h-10 rounded-lg transition-all duration-300 group-hover:shadow-md mt-auto"
+          size="sm"
+        >
+          <Link href={`/dashboard/listings/${listing.id}/edit`}>
+            <Edit2 className="h-4 w-4 mr-2" />
+            Edit Listing
+          </Link>
+        </Button>
       </div>
-    </Link>
+    </div>
   )
 }

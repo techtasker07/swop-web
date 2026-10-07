@@ -33,13 +33,13 @@ export function QuickActions() {
     {
       icon: ClockIcon,
       label: 'Time Banking',
-      href: '/dashboard/time-banking',
+      href: '/time-banking',
       color: 'bg-[#073232] hover:bg-[#073232]/90',
     },
     {
       icon: HandRaisedIcon,
       label: 'Request Help',
-      href: '/dashboard/time-banking/request',
+      href: '/time-banking/create',
       color: 'bg-[#32cd32] hover:bg-[#28a428]',
     },
     {
@@ -51,7 +51,7 @@ export function QuickActions() {
     {
       icon: HandRaisedIcon,
       label: 'Give Help',
-      href: '/dashboard/time-banking/offer',
+      href: '/time-banking',
       color: 'bg-[#32cd32] hover:bg-[#28a428]',
     },
     {

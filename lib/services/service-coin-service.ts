@@ -36,7 +36,6 @@ export class ServiceCoinService {
 
   async createValueBuyOrder({
     userId,
-    hours,
     coins,
     baseAmount,
     serviceFee,
@@ -46,7 +45,6 @@ export class ServiceCoinService {
     paymentMethod = "flutterwave",
   }: {
     userId: string
-    hours: number
     coins: number
     baseAmount: number
     serviceFee: number
@@ -57,7 +55,6 @@ export class ServiceCoinService {
   }): Promise<string> {
     const { data, error } = await this.supabase.rpc("create_service_coin_value_buy_order", {
       user_id_param: userId,
-      hours_param: hours,
       coins_param: coins,
       base_amount_param: baseAmount,
       service_fee_param: serviceFee,
@@ -73,7 +70,6 @@ export class ServiceCoinService {
 
   async createPayoutOrder({
     userId,
-    hours,
     coins,
     baseAmount,
     serviceFee,
@@ -82,7 +78,6 @@ export class ServiceCoinService {
     payoutDetails,
   }: {
     userId: string
-    hours: number
     coins: number
     baseAmount: number
     serviceFee: number
@@ -92,7 +87,6 @@ export class ServiceCoinService {
   }): Promise<string> {
     const { data, error } = await this.supabase.rpc("create_service_coin_payout_order", {
       user_id_param: userId,
-      hours_param: hours,
       coins_param: coins,
       base_amount_param: baseAmount,
       service_fee_param: serviceFee,
