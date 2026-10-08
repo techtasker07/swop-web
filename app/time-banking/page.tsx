@@ -120,12 +120,14 @@ export default function TimeBankingPage() {
           {/* Create Request Button - Full width on mobile */}
           <div className="mb-4 sm:mb-6 flex justify-end">
             <Button 
+              asChild
               size="lg"
               className="bg-gradient-to-r from-[#32cd32] to-[#28a428] hover:from-[#28a428] hover:to-[#32cd32] text-white w-full sm:w-auto shadow-md"
-              onClick={() => router.push('/time-banking/create')}
             >
-              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Request Help
+              <Link href='/time-banking/create'>
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Request Help
+              </Link>
             </Button>
           </div>
 
@@ -205,11 +207,13 @@ export default function TimeBankingPage() {
                     <h3 className="text-base sm:text-lg font-semibold mb-2">No Requests Yet</h3>
                     <p className="text-sm sm:text-base text-gray-600 mb-4">Create your first request to get help from the community</p>
                     <Button 
+                      asChild
                       className="bg-gradient-to-r from-[#32cd32] to-[#28a428] hover:from-[#28a428] hover:to-[#32cd32] w-full sm:w-auto"
-                      onClick={() => router.push('/time-banking/create')}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Request
+                      <Link href="/time-banking/create">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Request
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

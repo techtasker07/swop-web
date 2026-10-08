@@ -1,1 +1,5 @@
-import { redirect } from "next/navigation"; export default function Page() { redirect("/time-banking") }
+import { redirect } from "next/navigation"
+
+export default function Page() {
+  redirect("/time-banking")
+}
