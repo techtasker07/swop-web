@@ -332,7 +332,7 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                     </div>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/users/${listing.seller.id}`}>
+                    <Link href={listing.seller.user_type === 'business' ? `/business-profile/${listing.seller.id}` : `/users/${listing.seller.id}`}>
                       View Profile
                     </Link>
                   </Button>

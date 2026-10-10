@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { NewMessageForm } from "@/components/messages/new-message-form"
 import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { redirect } from "next/navigation"
 
 interface NewMessagePageProps {
@@ -51,16 +52,19 @@ export default async function NewMessagePage({ searchParams }: NewMessagePagePro
   }
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <div className="container mx-auto max-w-2xl px-4 py-8">
-        <h1 className="mb-8 text-3xl font-bold text-foreground">New Message</h1>
-        <NewMessageForm
-          currentUser={user}
-          initialListing={listing}
-          initialRecipient={seller}
-        />
-      </div>
-    </>
+      <main className="flex-1">
+        <div className="container mx-auto max-w-2xl px-4 py-8">
+          <h1 className="mb-8 text-3xl font-bold text-foreground">New Message</h1>
+          <NewMessageForm
+            currentUser={user}
+            initialListing={listing}
+            initialRecipient={seller}
+          />
+        </div>
+      </main>
+      <Footer />
+    </div>
   )
 }

@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2, ArrowLeft, ImagePlus, X, Trash2 } from "lucide-react"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -189,35 +191,46 @@ export default function EditListingPage() {
 
   if (loading && !error) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Loading listing...</p>
-        </div>
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-16">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Loading listing...</p>
+          </div>
+        </main>
+        <Footer />
       </div>
     )
   }
 
   if (error && loading) {
     return (
-      <div className="space-y-4 max-w-md mx-auto py-16">
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-800">Error Loading Listing</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-red-800 mb-4">{error}</p>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/listings">Back to My Listings</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 space-y-4 max-w-md mx-auto py-16">
+          <Card className="border-red-200 bg-red-50">
+            <CardHeader>
+              <CardTitle className="text-red-800">Error Loading Listing</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-red-800 mb-4">{error}</p>
+              <Button variant="outline" asChild>
+                <Link href="/dashboard/listings">Back to My Listings</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
+        <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/listings">
@@ -414,6 +427,9 @@ export default function EditListingPage() {
           </CardContent>
         </Card>
       </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   )
 }

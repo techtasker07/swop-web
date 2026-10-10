@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { ListingDetails } from "@/components/listings/listing-details"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 
 interface ListingPageProps {
   params: { id: string }
@@ -65,13 +67,19 @@ export default async function ListingPage({ params, searchParams }: ListingPageP
   }
 
   return (
-    <ListingDetails 
-      listing={{
-        ...listing,
-        _count: { favorites: favoriteCount || 0 }
-      }} 
-      user={user}
-      initialAction={searchParams.action}
-    />
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
+        <ListingDetails 
+          listing={{
+            ...listing,
+            _count: { favorites: favoriteCount || 0 }
+          }} 
+          user={user}
+          initialAction={searchParams.action}
+        />
+      </main>
+      <Footer />
+    </div>
   )
 }

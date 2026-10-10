@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { MessagesLayout } from "@/components/messages/messages-layout"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { redirect } from "next/navigation"
 
 export const metadata = {
@@ -22,5 +24,10 @@ export default async function MessagesPage() {
     .eq("is_active", true)
     .order("last_message_time", { ascending: false })
 
-  return <MessagesLayout conversations={conversations || []} participants={[]} currentUser={user} />
+  return (
+    <div className="flex min-h-screen flex-col">
+      <MessagesLayout conversations={conversations || []} participants={[]} currentUser={user} />
+      <Footer />
+    </div>
+  )
 }
