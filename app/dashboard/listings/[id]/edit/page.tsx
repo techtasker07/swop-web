@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -15,6 +15,7 @@ import { Loader2, ArrowLeft, ImagePlus, X, Trash2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { toast } from "sonner"
+import { getListingImages } from "@/lib/utils/listing-images"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,7 +61,7 @@ export default function EditListingPage() {
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
   
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     if (!id) return
@@ -84,7 +85,7 @@ export default function EditListingPage() {
 
         const { data: listing, error: fetchError } = await supabase
           .from("listings")
-          .select("*")
+          .select("*, listing_images(url, is_primary, sort_order, alt_text)")
           .eq("id", parseInt(id))
           .eq("seller_id", authUser.id)
           .single()
@@ -111,7 +112,7 @@ export default function EditListingPage() {
         setCategory(listing.category || "")
         setIsAvailable(listing.is_available ?? true)
         setLocation(listing.location || "")
-        setImageUrls(listing.images || [])
+        setImageUrls(getListingImages(listing).map((image) => image.url))
         setLoading(false)
       } catch (err) {
         console.error("Exception in loadListing:", err)
@@ -200,8 +201,10 @@ export default function EditListingPage() {
         uploadedImageUrls = await uploadNewImages()
       }
 
-      // Combine existing and newly uploaded images
-      const allImageUrls = [...imageUrls, ...uploadedImageUrls]
+      // Keep `images` as the canonical URL list while also synchronizing the
+      // relational rows below. This supports listings created by either the
+      // old or new upload flow and avoids losing existing photos on edit.
+      const allImageUrls = [...new Set([...imageUrls, ...uploadedImageUrls])].slice(0, 5)
 
       // Category is stored as string, not integer
       if (!category) {
@@ -223,7 +226,9 @@ export default function EditListingPage() {
           updated_at: new Date().toISOString(),
         })
         .eq("id", parseInt(id, 10))
-        .select()
+        .eq("seller_id", user.id)
+        .select("id")
+        .single()
 
       if (updateError) {
         console.error('Supabase update error:', updateError)
@@ -232,7 +237,33 @@ export default function EditListingPage() {
         return
       }
 
-      toast.success("Listing updated successfully!")
+      // Synchronize the normalized rows used by listing queries. The main
+      // listing update above is authoritative, so an image-row policy/cache
+      // issue must not report the whole listing update as failed.
+      const { error: removeImagesError } = await supabase
+        .from("listing_images")
+        .delete()
+        .eq("listing_id", parseInt(id, 10))
+
+      let syncImagesError = removeImagesError
+      if (!syncImagesError && allImageUrls.length > 0) {
+        const { error: insertImagesError } = await supabase
+          .from("listing_images")
+          .insert(allImageUrls.map((url, index) => ({
+            listing_id: parseInt(id, 10),
+            url,
+            is_primary: index === 0,
+            sort_order: index,
+          })))
+        syncImagesError = insertImagesError
+      }
+
+      if (syncImagesError) {
+        console.error("Listing image-row synchronization error:", syncImagesError)
+        toast.warning("Listing saved. Its image gallery will finish synchronizing shortly.")
+      } else {
+        toast.success("Listing updated successfully!")
+      }
       setSelectedImages([])
       setPreviewUrls([])
       router.push("/dashboard/listings")

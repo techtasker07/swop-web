@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,7 @@ import { formatDistanceToNow } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import type { Listing, Profile } from "@/lib/types/database"
+import { getListingImages } from "@/lib/utils/listing-images"
 
 interface ListingDetailsProps {
   listing: Listing & {
@@ -50,21 +51,14 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
 
   const supabase = createClient()
   
-  // Process images - use listing_images if available, otherwise use images array
-  let images = []
-  
-  if (listing.listing_images && listing.listing_images.length > 0) {
-    // Images from listing_images table
-    images = listing.listing_images.sort((a, b) => a.sort_order - b.sort_order)
-  } else if (listing.images && listing.images.length > 0) {
-    // Images from images array in listing
-    images = listing.images.map((url: string, index: number) => ({ 
-      url, 
-      is_primary: index === 0, 
-      sort_order: index, 
-      alt_text: null 
-    }))
-  }
+  const images = useMemo(
+    () => getListingImages(listing),
+    [listing.images, listing.listing_images],
+  )
+
+  useEffect(() => {
+    setSelectedImageIndex((index) => Math.min(index, Math.max(images.length - 1, 0)))
+  }, [images.length])
 
   useEffect(() => {
     if (user) {
@@ -220,13 +214,14 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
             
             {/* Image Thumbnails */}
             {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
                 {images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square relative overflow-hidden rounded-lg border-2 transition-colors ${
-                      selectedImageIndex === index ? 'border-primary' : 'border-transparent'
+                    aria-label={`View image ${index + 1} of ${images.length}`}
+                    className={`aspect-square relative overflow-hidden rounded-lg border-2 transition-all hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                      selectedImageIndex === index ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'
                     }`}
                   >
                     <Image

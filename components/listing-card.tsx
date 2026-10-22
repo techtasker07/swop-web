@@ -6,10 +6,11 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, MessageCircle, Star, ArrowUpDown, ArrowRightLeft, Verified, Crown, Eye, Clock } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { formatNaira } from "@/lib/utils/currency"
 import type { Listing, Profile } from "@/lib/types/database"
+import { getListingImages } from "@/lib/utils/listing-images"
 
 interface ListingCardProps {
   listing: Listing & {
@@ -24,30 +25,26 @@ export function ListingCard({ listing }: ListingCardProps) {
   const [user, setUser] = useState<any>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  // Get all images sorted by sort_order - use listing_images if available, otherwise use images array
-  let allImages: any[] = []
-  
-  if (listing.listing_images && listing.listing_images.length > 0) {
-    allImages = listing.listing_images.sort((a, b) => a.sort_order - b.sort_order)
-  } else if (listing.images && listing.images.length > 0) {
-    allImages = listing.images.map((url: string, index: number) => ({
-      url,
-      is_primary: index === 0,
-      sort_order: index
-    }))
-  }
+  const allImages = useMemo(
+    () => getListingImages(listing),
+    [listing.images, listing.listing_images],
+  )
 
   const currentImage = allImages[currentImageIndex]?.url || "/placeholder.jpg"
 
-  // Auto-rotate images every 4 seconds if multiple images
+  // Cycle through every available listing image while users browse.
   useEffect(() => {
     if (allImages.length <= 1) return
 
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
-    }, 4000)
+    }, 10000)
 
     return () => clearInterval(interval)
+  }, [allImages.length])
+
+  useEffect(() => {
+    setCurrentImageIndex((index) => Math.min(index, Math.max(allImages.length - 1, 0)))
   }, [allImages.length])
 
   const timeAgo = getTimeAgo(new Date(listing.created_at))
@@ -161,7 +158,7 @@ export function ListingCard({ listing }: ListingCardProps) {
 
         {/* Image Indicators - Show when multiple images */}
         {allImages.length > 1 && (
-          <div className="absolute top-2 sm:top-3 md:top-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-1">
+          <div className="absolute top-2 sm:top-3 md:top-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/35 px-2 py-1 text-[10px] font-medium text-white shadow-sm backdrop-blur-sm z-20">
             {allImages.map((_, index) => (
               <div
                 key={index}
@@ -172,6 +169,7 @@ export function ListingCard({ listing }: ListingCardProps) {
                 }`}
               />
             ))}
+            <span className="ml-0.5">{currentImageIndex + 1}/{allImages.length}</span>
           </div>
         )}
 

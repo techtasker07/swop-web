@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { ListingDetails } from "@/components/listings/listing-details"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { getListingImages } from "@/lib/utils/listing-images"
 
 interface ListingPageProps {
   params: { id: string }
@@ -49,17 +50,9 @@ export default async function ListingPage({ params, searchParams }: ListingPageP
     notFound()
   }
 
-  // If no images in listing_images table, convert images array to listing_images format
-  const listing_images = listing.listing_images && listing.listing_images.length > 0
-    ? listing.listing_images
-    : (listing.images && listing.images.length > 0
-        ? listing.images.map((url: string, index: number) => ({
-            url,
-            is_primary: index === 0,
-            sort_order: index,
-            alt_text: null
-          }))
-        : [])
+  // Merge rows and legacy URLs: some older listings have valid photos in both
+  // locations, and selecting only one source hides part of the gallery.
+  const listing_images = getListingImages(listing)
 
   // Get favorite count
   const { count: favoriteCount } = await supabase
