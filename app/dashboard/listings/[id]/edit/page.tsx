@@ -103,7 +103,7 @@ export default function EditListingPage() {
 
         setTitle(listing.title || "")
         setDescription(listing.description || "")
-        setLookingFor(listing.looking_for || "")
+        setLookingFor((listing.preferred_items && listing.preferred_items[0]) || "")
         setCategory(listing.category_id ? listing.category_id.toString() : "")
         setIsAvailable(listing.is_available ?? true)
         setLocation(listing.location || "")
@@ -135,25 +135,33 @@ export default function EditListingPage() {
     setSaving(true)
 
     try {
-      // Convert category slug to ID or use directly if it's already an ID
-      let categoryId = category ? parseInt(category) : null
+      // Convert category to integer if it's a string
+      const categoryId = category ? parseInt(category, 10) : null
+
+      if (!categoryId && category) {
+        setError("Please select a valid category")
+        setSaving(false)
+        return
+      }
 
       const { error: updateError } = await supabase
         .from("listings")
         .update({
           title,
           description,
-          looking_for: lookingFor || null,
+          preferred_items: lookingFor && lookingFor.length > 0 ? [lookingFor] : [],
           category_id: categoryId,
           is_available: isAvailable,
           location: location || null,
-          images: imageUrls.length > 0 ? imageUrls : null,
+          images: imageUrls.length > 0 ? imageUrls : [],
           updated_at: new Date().toISOString(),
         })
-        .eq("id", parseInt(id))
+        .eq("id", parseInt(id, 10))
+        .select()
 
       if (updateError) {
-        setError(updateError.message)
+        console.error('Supabase update error:', updateError)
+        setError(updateError.message || "Failed to save listing")
         setSaving(false)
         return
       }
@@ -161,7 +169,9 @@ export default function EditListingPage() {
       router.push("/dashboard/listings")
       router.refresh()
     } catch (err) {
-      setError(`Error saving listing: ${err}`)
+      console.error('Error saving listing:', err)
+      const errorMsg = err instanceof Error ? err.message : "Error saving listing"
+      setError(errorMsg)
       setSaving(false)
     }
   }

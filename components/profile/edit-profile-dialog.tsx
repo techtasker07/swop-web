@@ -96,16 +96,21 @@ export function EditProfileDialog({ open, onOpenChange, profile, user }: EditPro
 
       const { error } = await supabase
         .from('profiles')
-        .upsert({ id: user.id, ...updateData })
+        .update(updateData)
+        .eq('id', user.id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error details:', error)
+        throw error
+      }
 
       toast.success("Profile updated successfully!")
       onOpenChange(false)
       router.refresh()
     } catch (error) {
       console.error('Error updating profile:', error)
-      toast.error("Failed to update profile. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "Failed to update profile. Please try again."
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
