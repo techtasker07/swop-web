@@ -50,15 +50,21 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
 
   const supabase = createClient()
   
-  // Process images - prioritize listing_images, fallback to images array
-  const images = listing.listing_images?.length > 0 
-    ? listing.listing_images.sort((a, b) => a.sort_order - b.sort_order)
-    : listing.images?.map((url, index) => ({ 
-        url, 
-        is_primary: index === 0, 
-        sort_order: index, 
-        alt_text: null 
-      })) || []
+  // Process images - use listing_images if available, otherwise use images array
+  let images = []
+  
+  if (listing.listing_images && listing.listing_images.length > 0) {
+    // Images from listing_images table
+    images = listing.listing_images.sort((a, b) => a.sort_order - b.sort_order)
+  } else if (listing.images && listing.images.length > 0) {
+    // Images from images array in listing
+    images = listing.images.map((url: string, index: number) => ({ 
+      url, 
+      is_primary: index === 0, 
+      sort_order: index, 
+      alt_text: null 
+    }))
+  }
 
   useEffect(() => {
     if (user) {

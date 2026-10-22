@@ -49,6 +49,18 @@ export default async function ListingPage({ params, searchParams }: ListingPageP
     notFound()
   }
 
+  // If no images in listing_images table, convert images array to listing_images format
+  const listing_images = listing.listing_images && listing.listing_images.length > 0
+    ? listing.listing_images
+    : (listing.images && listing.images.length > 0
+        ? listing.images.map((url: string, index: number) => ({
+            url,
+            is_primary: index === 0,
+            sort_order: index,
+            alt_text: null
+          }))
+        : [])
+
   // Get favorite count
   const { count: favoriteCount } = await supabase
     .from("favorites")
@@ -73,6 +85,7 @@ export default async function ListingPage({ params, searchParams }: ListingPageP
         <ListingDetails 
           listing={{
             ...listing,
+            listing_images,
             _count: { favorites: favoriteCount || 0 }
           }} 
           user={user}

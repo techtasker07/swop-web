@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ArrowLeft, ImagePlus, X, Trash2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,9 +50,12 @@ export default function EditListingPage() {
   const [isAvailable, setIsAvailable] = useState(true)
   const [location, setLocation] = useState("")
   const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [imageInput, setImageInput] = useState("")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
@@ -104,7 +108,7 @@ export default function EditListingPage() {
         setTitle(listing.title || "")
         setDescription(listing.description || "")
         setLookingFor((listing.preferred_items && listing.preferred_items[0]) || "")
-        setCategory(listing.category_id ? listing.category_id.toString() : "")
+        setCategory(listing.category || "")
         setIsAvailable(listing.is_available ?? true)
         setLocation(listing.location || "")
         setImageUrls(listing.images || [])
@@ -129,16 +133,78 @@ export default function EditListingPage() {
     setImageUrls(imageUrls.filter((_, i) => i !== index))
   }
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    
+    // Check total images (existing + new)
+    if (files.length + imageUrls.length + selectedImages.length > 5) {
+      toast.error("Maximum 5 images allowed per listing")
+      return
+    }
+
+    setSelectedImages((prev) => [...prev, ...files])
+    files.forEach((file) => {
+      setPreviewUrls((prev) => [...prev, URL.createObjectURL(file)])
+    })
+  }
+
+  const removeSelectedImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index))
+    setPreviewUrls((prev) => {
+      URL.revokeObjectURL(prev[index])
+      return prev.filter((_, i) => i !== index)
+    })
+  }
+
+  const uploadNewImages = async (): Promise<string[]> => {
+    if (selectedImages.length === 0) return []
+    
+    setUploading(true)
+    try {
+      const urls = await Promise.all(
+        selectedImages.map(async (file, index) => {
+          const fileExt = file.name.split(".").pop()
+          const filePath = `${user?.id ?? "anonymous"}/listings/${Date.now()}-${index}.${fileExt}`
+          
+          const { error } = await supabase.storage
+            .from("listing-images")
+            .upload(filePath, file)
+          
+          if (error) throw error
+          
+          const { data } = supabase.storage
+            .from("listing-images")
+            .getPublicUrl(filePath)
+          
+          return data.publicUrl
+        })
+      )
+      return urls
+    } catch (err) {
+      console.error('Error uploading images:', err)
+      throw err
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setSaving(true)
 
     try {
-      // Convert category to integer if it's a string
-      const categoryId = category ? parseInt(category, 10) : null
+      // Upload new images first if any are selected
+      let uploadedImageUrls: string[] = []
+      if (selectedImages.length > 0) {
+        uploadedImageUrls = await uploadNewImages()
+      }
 
-      if (!categoryId && category) {
+      // Combine existing and newly uploaded images
+      const allImageUrls = [...imageUrls, ...uploadedImageUrls]
+
+      // Category is stored as string, not integer
+      if (!category) {
         setError("Please select a valid category")
         setSaving(false)
         return
@@ -150,10 +216,10 @@ export default function EditListingPage() {
           title,
           description,
           preferred_items: lookingFor && lookingFor.length > 0 ? [lookingFor] : [],
-          category_id: categoryId,
+          category,
           is_available: isAvailable,
           location: location || null,
-          images: imageUrls.length > 0 ? imageUrls : [],
+          images: allImageUrls.length > 0 ? allImageUrls : [],
           updated_at: new Date().toISOString(),
         })
         .eq("id", parseInt(id, 10))
@@ -166,12 +232,16 @@ export default function EditListingPage() {
         return
       }
 
+      toast.success("Listing updated successfully!")
+      setSelectedImages([])
+      setPreviewUrls([])
       router.push("/dashboard/listings")
       router.refresh()
     } catch (err) {
       console.error('Error saving listing:', err)
       const errorMsg = err instanceof Error ? err.message : "Error saving listing"
       setError(errorMsg)
+      toast.error(errorMsg)
       setSaving(false)
     }
   }
@@ -380,56 +450,93 @@ export default function EditListingPage() {
               <div className="space-y-2">
                 <Label>Images (up to 5)</Label>
                 <div className="flex gap-2">
-                  <Input
-                    type="url"
-                    value={imageInput}
-                    onChange={(e) => setImageInput(e.target.value)}
-                    placeholder="Paste image URL"
-                    disabled={saving || imageUrls.length >= 5}
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handleAddImage}
-                    disabled={!imageInput || imageUrls.length >= 5}
-                  >
-                    <ImagePlus className="h-4 w-4" />
-                  </Button>
+                  <label className="flex-1 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-3 cursor-pointer hover:border-primary hover:bg-primary/5 transition">
+                    <div className="flex flex-col items-center gap-2">
+                      <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Click to upload images</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      disabled={saving || uploading || (imageUrls.length + selectedImages.length >= 5)}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  {imageUrls.length + selectedImages.length} / 5 images
+                </p>
+                
+                {/* Existing Images */}
                 {imageUrls.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {imageUrls.map((url, index) => (
-                      <div key={index} className="relative">
-                        <img 
-                          src={url || "/placeholder.svg"} 
-                          alt={`Preview ${index + 1}`}
-                          className="h-20 w-20 rounded-lg border border-border object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Existing Images</p>
+                    <div className="flex flex-wrap gap-2">
+                      {imageUrls.map((url, index) => (
+                        <div key={`existing-${index}`} className="relative group">
+                          <img 
+                            src={url || "/placeholder.svg"} 
+                            alt={`Existing ${index + 1}`}
+                            className="h-20 w-20 rounded-lg border border-border object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* New Images to Upload */}
+                {previewUrls.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">New Images to Upload</p>
+                    <div className="flex flex-wrap gap-2">
+                      {previewUrls.map((url, index) => (
+                        <div key={`new-${index}`} className="relative group">
+                          <img 
+                            src={url} 
+                            alt={`New ${index + 1}`}
+                            className="h-20 w-20 rounded-lg border-2 border-primary border-dashed object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedImage(index)}
+                            className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                          {uploading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                              <Loader2 className="h-4 w-4 animate-spin text-white" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
               <div className="flex gap-3">
-                <Button type="submit" disabled={saving} className="flex-1">
-                  {saving ? (
+                <Button type="submit" disabled={saving || uploading} className="flex-1">
+                  {saving || uploading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      {uploading ? "Uploading images..." : "Saving..."}
                     </>
                   ) : (
                     "Save Changes"
                   )}
                 </Button>
-                <Button type="button" variant="outline" asChild disabled={saving}>
+                <Button type="button" variant="outline" asChild disabled={saving || uploading}>
                   <Link href="/dashboard/listings">Cancel</Link>
                 </Button>
               </div>

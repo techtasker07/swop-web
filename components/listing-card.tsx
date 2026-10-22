@@ -22,14 +22,35 @@ interface ListingCardProps {
 export function ListingCard({ listing }: ListingCardProps) {
   const [favoriteCount] = useState(listing._count?.favorites || 0)
   const [user, setUser] = useState<any>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  // Get all images sorted by sort_order - use listing_images if available, otherwise use images array
+  let allImages: any[] = []
+  
+  if (listing.listing_images && listing.listing_images.length > 0) {
+    allImages = listing.listing_images.sort((a, b) => a.sort_order - b.sort_order)
+  } else if (listing.images && listing.images.length > 0) {
+    allImages = listing.images.map((url: string, index: number) => ({
+      url,
+      is_primary: index === 0,
+      sort_order: index
+    }))
+  }
+
+  const currentImage = allImages[currentImageIndex]?.url || "/placeholder.jpg"
+
+  // Auto-rotate images every 4 seconds if multiple images
+  useEffect(() => {
+    if (allImages.length <= 1) return
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [allImages.length])
 
   const timeAgo = getTimeAgo(new Date(listing.created_at))
-  
-  // Get primary image or first image
-  const primaryImage = listing.listing_images?.find(img => img.is_primary)?.url || 
-                      listing.listing_images?.[0]?.url || 
-                      listing.images?.[0] || 
-                      "/placeholder.jpg"
 
   useEffect(() => {
     const checkUser = async () => {
@@ -90,7 +111,7 @@ export function ListingCard({ listing }: ListingCardProps) {
         {/* Main Image Background */}
         <div className="absolute inset-0">
           <Image
-            src={primaryImage}
+            src={currentImage}
             alt={listing.title}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -137,6 +158,22 @@ export function ListingCard({ listing }: ListingCardProps) {
             )}
           </div>
         </div>
+
+        {/* Image Indicators - Show when multiple images */}
+        {allImages.length > 1 && (
+          <div className="absolute top-2 sm:top-3 md:top-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-1">
+            {allImages.map((_, index) => (
+              <div
+                key={index}
+                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+                  index === currentImageIndex
+                    ? 'bg-white w-4 sm:w-5 shadow-md'
+                    : 'bg-white/50 w-1.5 sm:w-2 hover:bg-white/75'
+                }`}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Seller Avatar - Hidden on mobile, shown on hover on desktop */}
         {listing.seller && (
