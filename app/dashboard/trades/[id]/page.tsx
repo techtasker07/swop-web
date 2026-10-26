@@ -11,13 +11,29 @@ import { formatNaira } from "@/lib/utils/currency"
 export default async function TradeDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: trade } = await supabase
+  
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return <div>Please log in to view trade details</div>
+  }
+  
+  // Fetch trade with all related data
+  const { data: trade, error } = await supabase
     .from("trades")
     .select("*, proposer:profiles!proposer_id(*), receiver:profiles!receiver_id(*), target_listing:listings!target_listing_id(*, listing_images(url, is_primary, sort_order))")
     .eq("id", id)
     .single()
 
-  if (!trade) return <div>Trade not found</div>
+  if (error) {
+    console.error('Error fetching trade:', error)
+  }
+
+  // Verify user is part of this trade
+  if (!trade || (trade.proposer_id !== user.id && trade.receiver_id !== user.id)) {
+    return <div>Trade not found</div>
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

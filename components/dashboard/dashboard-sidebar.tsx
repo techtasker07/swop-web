@@ -29,6 +29,7 @@ const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/listings", label: "My Listings", icon: Package },
   { href: "/dashboard/listings/new", label: "New Listing", icon: PlusCircle },
+  { href: "/dashboard/history", label: "History", icon: Clock },
   { href: "/dashboard/profile", label: "Profile", icon: UserIcon },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
   { href: "/blog", label: "Blog", icon: BookOpen },

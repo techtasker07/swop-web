@@ -10,11 +10,23 @@ export default async function TradesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: trades } = await supabase
+  // Fetch trades where user is either proposer or receiver
+  const { data: proposedTrades } = await supabase
     .from("trades")
     .select("*, proposer:profiles!proposer_id(display_name, avatar_url), receiver:profiles!receiver_id(display_name, avatar_url), target_listing:listings!target_listing_id(title, price)")
-    .or(`proposer_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    .eq("proposer_id", user.id)
     .order("created_at", { ascending: false })
+
+  const { data: receivedTrades } = await supabase
+    .from("trades")
+    .select("*, proposer:profiles!proposer_id(display_name, avatar_url), receiver:profiles!receiver_id(display_name, avatar_url), target_listing:listings!target_listing_id(title, price)")
+    .eq("receiver_id", user.id)
+    .order("created_at", { ascending: false })
+
+  // Combine and deduplicate trades
+  const allTrades = [...(proposedTrades || []), ...(receivedTrades || [])].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
 
   return (
     <div className="space-y-6">
@@ -24,7 +36,7 @@ export default async function TradesPage() {
         <p className="mt-2 text-white/75">Track proposals, completion codes, reports, and accepted swaps.</p>
       </div>
       <div className="grid gap-4">
-        {(trades || []).map((trade: any) => (
+        {(allTrades || []).map((trade: any) => (
           <Card key={trade.id} className="rounded-[1.75rem] shadow-md">
             <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
@@ -41,7 +53,7 @@ export default async function TradesPage() {
             </CardContent>
           </Card>
         ))}
-        {(!trades || trades.length === 0) && <Card className="rounded-[2rem]"><CardContent className="p-10 text-center text-gray-600">No trades yet.</CardContent></Card>}
+        {(!allTrades || allTrades.length === 0) && <Card className="rounded-[2rem]"><CardContent className="p-10 text-center text-gray-600">No trades yet.</CardContent></Card>}
       </div>
     </div>
   )

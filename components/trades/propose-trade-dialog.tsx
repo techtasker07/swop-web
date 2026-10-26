@@ -444,7 +444,7 @@ export function ProposeTradeDialog({ open, onOpenChange, targetListing, user }: 
 
       toast.success("Trade proposal sent successfully!")
       onOpenChange(false)
-      router.push("/dashboard/trades")
+      router.push("/dashboard/history?tab=trades")
     } catch (error) {
       console.error("Error creating trade proposal:", error)
       const messageText = error instanceof Error ? error.message : "Failed to send trade proposal. Please try again."

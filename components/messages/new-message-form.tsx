@@ -43,14 +43,31 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
 
     try {
       // Check if conversation already exists
-      const { data: existingConversation } = await supabase
+      // Query for conversations where both users are participants
+      const { data: allConversations } = await supabase
         .from("conversations")
         .select("id")
-        .contains("participants", [currentUser.id, recipient.id])
         .eq("listing_id", initialListing?.id || null)
-        .single()
 
-      let conversationId = existingConversation?.id
+      let conversationId = null
+      
+      // Find conversation that includes both participants
+      if (allConversations && allConversations.length > 0) {
+        for (const conv of allConversations) {
+          const { data: convData } = await supabase
+            .from("conversations")
+            .select("participants")
+            .eq("id", conv.id)
+            .single()
+          
+          if (convData?.participants && 
+              convData.participants.includes(currentUser.id) && 
+              convData.participants.includes(recipient.id)) {
+            conversationId = conv.id
+            break
+          }
+        }
+      }
 
       if (!conversationId) {
         // Create new conversation
@@ -64,7 +81,10 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
           .select()
           .single()
 
-        if (conversationError) throw conversationError
+        if (conversationError) {
+          console.error('Conversation creation error:', conversationError)
+          throw conversationError
+        }
         conversationId = newConversation.id
       }
 
@@ -78,19 +98,28 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
           message_type: "text",
         })
 
-      if (messageError) throw messageError
+      if (messageError) {
+        console.error('Message insertion error:', messageError)
+        throw messageError
+      }
 
       // Update conversation last_message_at
-      await supabase
+      const { error: updateError } = await supabase
         .from("conversations")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", conversationId)
+
+      if (updateError) {
+        console.error('Update error:', updateError)
+        throw updateError
+      }
 
       toast.success("Message sent successfully!")
       router.push("/messages")
     } catch (error) {
       console.error("Error sending message:", error)
-      toast.error("Failed to send message. Please try again.")
+      const errorMsg = error instanceof Error ? error.message : "Failed to send message. Please try again."
+      toast.error(errorMsg)
     } finally {
       setIsLoading(false)
     }
