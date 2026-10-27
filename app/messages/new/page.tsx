@@ -3,6 +3,8 @@ import { NewMessageForm } from "@/components/messages/new-message-form"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { redirect } from "next/navigation"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 
 interface NewMessagePageProps {
   searchParams: { 
@@ -56,6 +58,10 @@ export default async function NewMessagePage({ searchParams }: NewMessagePagePro
       <Header />
       <main className="flex-1">
         <div className="container mx-auto max-w-2xl px-4 py-8">
+          <Link href={`/b2b-listing-details/${searchParams.listing}` || "/browse"} className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Link>
           <h1 className="mb-8 text-3xl font-bold text-foreground">New Message</h1>
           <NewMessageForm
             currentUser={user}

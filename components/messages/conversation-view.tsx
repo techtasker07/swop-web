@@ -41,6 +41,10 @@ export function ConversationView({ conversation, conversationIds, initialMessage
       if (error) return
       setMessages((current) => current.map((message) => unread.includes(message.id) ? { ...message, is_read: true } : message))
       await onMessageSent?.()
+      
+      // Trigger a custom event to refresh the header unread count
+      // This ensures the header badge updates immediately after marking messages as read
+      window.dispatchEvent(new CustomEvent('messagesRead', { detail: { count: unread.length } }))
     }
 
     void markMessagesRead()

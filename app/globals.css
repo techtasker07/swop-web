@@ -158,3 +158,41 @@
 .blog-content table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.9rem; }
 .blog-content table th, .blog-content table td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid hsl(var(--border)); }
 .blog-content table th { background: hsl(var(--muted)); font-weight: 600; }
+
+/* Unread message badge animations */
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgb(50, 205, 50, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(50, 205, 50, 0);
+  }
+}
+
+@keyframes badge-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgb(50, 205, 50, 0.6), inset 0 0 6px rgb(50, 205, 50, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 16px rgb(50, 205, 50, 0.9), inset 0 0 8px rgb(50, 205, 50, 0.5);
+  }
+}
+
+@keyframes badge-scale-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.9;
+  }
+}
+
+.unread-badge {
+  animation: badge-pulse 2s infinite, badge-glow 2s infinite;
+}
+
+.unread-badge-mobile {
+  animation: badge-scale-pulse 1.5s infinite;
+}

@@ -55,7 +55,14 @@ export function Header() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => void refreshUnreadCount(user.id))
       .subscribe()
 
-    return () => { void supabase.removeChannel(channel) }
+    // Listen for custom event when messages are marked as read
+    const handleMessagesRead = () => void refreshUnreadCount(user.id)
+    window.addEventListener('messagesRead', handleMessagesRead)
+
+    return () => { 
+      void supabase.removeChannel(channel)
+      window.removeEventListener('messagesRead', handleMessagesRead)
+    }
   }, [refreshUnreadCount, supabase, user])
 
   const handleSearch = (e: React.FormEvent) => {
@@ -186,10 +193,10 @@ export function Header() {
             </Link>
           )}
           {user && (
-            <Link data-nav="messages-link" href="/messages" className="text-sm font-medium text-white/90 transition-colors hover:text-white flex items-center gap-2">
+            <Link data-nav="messages-link" href="/messages" className="text-sm font-medium text-white/90 transition-colors hover:text-white flex items-center gap-2 relative">
               Messages
               {unreadCount > 0 && (
-                <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
+                <Badge variant="destructive" className="unread-badge h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center bg-[#32cd32]">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </Badge>
               )}
@@ -225,7 +232,7 @@ export function Header() {
                 <Link href="/messages">
                   <MessageCircle className="h-4 w-4" />
                   {unreadCount > 0 && (
-                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
+                    <Badge variant="destructive" className="unread-badge-mobile absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-[#32cd32] flex items-center justify-center">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Badge>
                   )}
@@ -311,7 +318,7 @@ export function Header() {
                 <Link href="/messages" className="text-sm font-medium text-white/90 hover:text-white transition-colors flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                   Messages
                   {unreadCount > 0 && (
-                    <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 text-xs">
+                    <Badge variant="destructive" className="unread-badge-mobile h-5 w-5 rounded-full p-0 text-xs bg-[#32cd32] flex items-center justify-center">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Badge>
                   )}

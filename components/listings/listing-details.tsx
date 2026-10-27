@@ -16,7 +16,6 @@ import {
   Eye,
   Star,
   ShieldCheck,
-  MessageCircle,
   ArrowRightLeft
 } from "lucide-react"
 import { ProposeTradeDialog } from "@/components/trades/propose-trade-dialog"
@@ -136,21 +135,6 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
     }
     
     setShowTradeDialog(true)
-  }
-
-  const handleMessageClick = () => {
-    if (!user) {
-      toast.error('Please sign in to message sellers')
-      return
-    }
-    
-    if (user.id === listing.seller_id) {
-      toast.error("You cannot message yourself!")
-      return
-    }
-    
-    // Navigate to messages with listing context
-    window.location.href = `/messages/new?listing=${listing.id}&seller=${listing.seller_id}`
   }
 
   const handleShare = async () => {
@@ -351,14 +335,6 @@ export function ListingDetails({ listing, user, initialAction }: ListingDetailsP
                 >
                   <ArrowRightLeft className="h-5 w-5 mr-2" />
                   Propose Trade
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={handleMessageClick}
-                  size="lg"
-                >
-                  <MessageCircle className="h-5 w-5 mr-2" />
-                  Message
                 </Button>
               </div>
             )}

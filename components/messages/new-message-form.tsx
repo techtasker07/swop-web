@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import Image from "next/image"
+import { ArrowLeft } from "lucide-react"
 
 interface NewMessageFormProps {
   currentUser: any
