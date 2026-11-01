@@ -12,9 +12,20 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
 
-const redirectUrl = () =>
-  Deno.env.get("APP_PAYMENT_REDIRECT_URL")?.trim() ??
-  `${Deno.env.get("SUPABASE_URL")}/functions/v1/flutterwave-webhook`
+const redirectUrl = (metadata: Record<string, unknown>, requestOrigin: string | null) => {
+  const appUrl =
+    Deno.env.get("NEXT_PUBLIC_APP_URL")?.trim() ||
+    Deno.env.get("APP_URL")?.trim() ||
+    requestOrigin?.trim() ||
+    "http://localhost:3000"
+  const requestedPath = String(metadata.redirect_url ?? "/trade-coins")
+  const returnPath = requestedPath.startsWith("/") && !requestedPath.startsWith("//")
+    ? requestedPath
+    : "/trade-coins"
+  const callback = new URL("/payment-return", appUrl)
+  callback.searchParams.set("return_to", returnPath)
+  return callback.toString()
+}
 
 const secretKey = () => {
   const value = Deno.env.get("FLUTTERWAVE_SECRET_KEY")?.trim() || Deno.env.get("FLW_SECRET_KEY")?.trim()
@@ -58,7 +69,10 @@ serve(async (req) => {
       tx_ref: reference,
       amount,
       currency,
-      redirect_url: redirectUrl(),
+      // Send the payer's browser to our app, not the Supabase function URL.
+      // The app closes the popup on cancellation and routes successful returns
+      // through its existing authenticated payment verification flow.
+      redirect_url: redirectUrl(metadata, req.headers.get("origin")),
       customer: customerFrom(userId, payload.customer ?? {}),
       payment_options: "card,banktransfer,ussd,mobilemoney",
       customizations: {

@@ -27,6 +27,11 @@ function roundNaira(value: number) {
 
 function normalizeBaseAmount(amount: number) {
   const numeric = Number.isFinite(amount) ? amount : COIN_NAIRA_VALUE
+  return Math.max(COIN_NAIRA_VALUE, Math.round(numeric))
+}
+
+function normalizePayoutAmount(amount: number) {
+  const numeric = Number.isFinite(amount) ? amount : COIN_NAIRA_VALUE
   return Math.max(COIN_NAIRA_VALUE, Math.ceil(numeric / COIN_NAIRA_VALUE) * COIN_NAIRA_VALUE)
 }
 
@@ -53,7 +58,7 @@ export class CoinPaymentPricingService {
     const serviceFee = roundNaira(baseAmount * (plan.transactionFeePercent / 100))
     const flutterwaveCharge = roundNaira(baseAmount * (FLUTTERWAVE_COLLECTION_PERCENT / 100))
     const flutterwaveVat = roundNaira(flutterwaveCharge * (FLUTTERWAVE_VAT_PERCENT / 100))
-    const coins = Math.floor(baseAmount / COIN_NAIRA_VALUE)
+    const coins = Number((baseAmount / COIN_NAIRA_VALUE).toFixed(2))
 
     return {
       audience,
@@ -71,7 +76,7 @@ export class CoinPaymentPricingService {
 
   async quotePayout(userId: string, amount: number): Promise<CoinPaymentQuote> {
     const { audience, plan } = await this.getPlanForUser(userId)
-    const baseAmount = normalizeBaseAmount(amount)
+    const baseAmount = normalizePayoutAmount(amount)
     const serviceFee = roundNaira(baseAmount * (plan.transactionFeePercent / 100))
     const flutterwaveCharge = roundNaira(baseAmount * (FLUTTERWAVE_PAYOUT_PERCENT / 100))
     const coins = Math.floor(baseAmount / COIN_NAIRA_VALUE)

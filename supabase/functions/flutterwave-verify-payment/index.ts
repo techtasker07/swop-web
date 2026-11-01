@@ -54,6 +54,7 @@ serve(async (req) => {
         amount: existing.amount,
         currency: existing.currency,
         transaction_id: existing.flutterwave_transaction_id,
+        meta: existing.metadata ?? {},
         message: "Payment completed successfully.",
       })
     }
@@ -73,6 +74,7 @@ serve(async (req) => {
         status: existing?.status ?? "pending",
         amount: existing?.amount ?? 0,
         currency: existing?.currency ?? "NGN",
+        meta: existing?.metadata ?? {},
         message: data.message ?? "Payment is still pending.",
       })
     }
@@ -106,6 +108,7 @@ serve(async (req) => {
       amount,
       currency,
       transaction_id: transactionId,
+      meta: existing?.metadata ?? {},
       message:
         status === "successful"
           ? "Payment completed successfully."

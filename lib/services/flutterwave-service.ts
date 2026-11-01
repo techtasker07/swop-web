@@ -18,7 +18,8 @@ export interface FlutterwavePaymentRequest {
 export async function createFlutterwavePayment(payload: FlutterwavePaymentRequest) {
   const supabase = createClient()
 
-  // Build metadata with redirect_url for webhook callback
+  // Preserve the in-app destination; the create-payment function wraps it in
+  // the first-party /payment-return callback used by Flutterwave.
   const metadata = {
     ...payload.metadata,
     redirect_url: payload.redirectPath || "/trade-coins",
@@ -69,7 +70,7 @@ export async function verifyFlutterwavePayment(reference: string) {
     status: data?.status,
     data: {
       status: data?.status,
-      meta: data,
+      meta: data?.meta ?? data,
     },
   }
 }

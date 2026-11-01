@@ -13,20 +13,29 @@ export default async function TradesPage() {
   // Fetch trades where user is either proposer or receiver
   const { data: proposedTrades } = await supabase
     .from("trades")
-    .select("*, proposer:profiles!proposer_id(display_name, avatar_url), receiver:profiles!receiver_id(display_name, avatar_url), target_listing:listings!target_listing_id(title, price)")
+    .select("*, proposer:profiles!proposer_id(display_name, avatar_url), receiver:profiles!receiver_id(display_name, avatar_url)")
     .eq("proposer_id", user.id)
     .order("created_at", { ascending: false })
 
   const { data: receivedTrades } = await supabase
     .from("trades")
-    .select("*, proposer:profiles!proposer_id(display_name, avatar_url), receiver:profiles!receiver_id(display_name, avatar_url), target_listing:listings!target_listing_id(title, price)")
+    .select("*, proposer:profiles!proposer_id(display_name, avatar_url), receiver:profiles!receiver_id(display_name, avatar_url)")
     .eq("receiver_id", user.id)
     .order("created_at", { ascending: false })
 
   // Combine and deduplicate trades
-  const allTrades = [...(proposedTrades || []), ...(receivedTrades || [])].sort((a, b) => 
+  const trades = [...(proposedTrades || []), ...(receivedTrades || [])].sort((a, b) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
+  const listingIds = [...new Set(trades.map((trade: any) => trade.metadata?.target_listing_id).filter(Boolean).map(Number))]
+  const { data: listings } = listingIds.length
+    ? await supabase.from("listings").select("id, title, price").in("id", listingIds)
+    : { data: [] }
+  const listingById = new Map((listings || []).map((listing: any) => [listing.id, listing]))
+  const allTrades = trades.map((trade: any) => ({
+    ...trade,
+    target_listing: listingById.get(Number(trade.metadata?.target_listing_id)) || null,
+  }))
 
   return (
     <div className="space-y-6">

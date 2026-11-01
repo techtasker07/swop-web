@@ -57,7 +57,7 @@ export function WalletDisplay({ userId, compact = false }: WalletDisplayProps) {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg">
           <span className="text-sm font-medium">Total Balance</span>
-          <span className="text-2xl font-bold">{balance.total_balance.toLocaleString()} TC</span>
+          <span className="text-2xl font-bold">{balance.total_balance.toLocaleString("en-NG", { maximumFractionDigits: 2 })} TC</span>
         </div>
       </CardContent>
     </Card>
@@ -71,7 +71,7 @@ interface CoinBadgeProps {
 function CoinBadge({ amount }: CoinBadgeProps) {
   return (
     <Badge variant="outline" className="bg-[#073232]/10 text-[#073232] border-[#073232]/30 font-semibold">
-      TC: {amount.toLocaleString()}
+      TC: {amount.toLocaleString("en-NG", { maximumFractionDigits: 2 })}
     </Badge>
   )
 }

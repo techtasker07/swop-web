@@ -1,0 +1,4 @@
+[functions.flutterwave-webhook]
+# Flutterwave sends browser redirects and signed server webhooks without a
+# Supabase JWT. The function validates the Flutterwave signature on POSTs.
+verify_jwt = false

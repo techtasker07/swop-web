@@ -104,7 +104,7 @@ export class TradeCoinService {
     totalPayable: number
     paymentMethod?: string
   }): Promise<string> {
-    const { data, error } = await this.supabase.rpc("create_trade_coin_value_buy_order", {
+    const { data, error } = await this.supabase.rpc("create_trade_coin_value_buy_order_v2", {
       user_id_param: userId,
       coins_param: coins,
       base_amount_param: baseAmount,

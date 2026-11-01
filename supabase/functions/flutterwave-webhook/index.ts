@@ -30,7 +30,7 @@ serve(async (req) => {
   const expectedHash = Deno.env.get("FLUTTERWAVE_WEBHOOK_SECRET_HASH")
   const suppliedHash =
     req.headers.get("verif-hash") ?? req.headers.get("x-flutterwave-signature")
-  if (req.method === "POST" && expectedHash && suppliedHash !== expectedHash) {
+  if (req.method === "POST" && (!expectedHash || suppliedHash !== expectedHash)) {
     return new Response("Unauthorized", { status: 401, headers: corsHeaders })
   }
 
@@ -58,10 +58,48 @@ serve(async (req) => {
     const transactionId =
       data.id?.toString() ?? data.transaction_id?.toString() ?? event.transaction_id?.toString()
     const status = normalizeStatus(data.status ?? event.status)
-    const metadata = data.meta ?? data.metadata ?? event.meta ?? event.metadata ?? {}
+    let metadata = data.meta ?? data.metadata ?? event.meta ?? event.metadata ?? {}
 
     if (!reference && !transactionId) {
       return new Response("No reference supplied", { status: 202, headers: corsHeaders })
+    }
+
+    // Flutterwave redirects the customer's browser with a GET. Treat those
+    // query parameters as navigation hints only; verification remains in the
+    // authenticated app flow and payment status is updated by signed webhooks.
+    if (req.method === "GET") {
+      if (reference) {
+        const { data: payment } = await supabase
+          .from("payment_transactions")
+          .select("metadata")
+          .eq("reference", reference)
+          .maybeSingle()
+        metadata = payment?.metadata ?? metadata
+      }
+
+      const configuredAppUrl =
+        Deno.env.get("NEXT_PUBLIC_APP_URL") ??
+        Deno.env.get("NEXT_PUBLIC_SITE_URL") ??
+        Deno.env.get("APP_URL") ??
+        "http://localhost:3000"
+      const appUrl = configuredAppUrl.endsWith("/")
+        ? configuredAppUrl.slice(0, -1)
+        : configuredAppUrl
+      const paymentPath = String(metadata?.redirect_url ?? "/trade-coins")
+      const safePaymentPath = paymentPath.startsWith("/") && !paymentPath.startsWith("//")
+        ? paymentPath
+        : "/trade-coins"
+
+      if (status === "failed") {
+        const cancelUrl = new URL("/payment-return", appUrl)
+        cancelUrl.searchParams.set("status", "cancelled")
+        return Response.redirect(cancelUrl.toString(), 302)
+      }
+
+      const returnUrl = new URL(safePaymentPath, appUrl)
+      returnUrl.searchParams.set("payment_reference", String(reference ?? transactionId ?? ""))
+      returnUrl.searchParams.set("status", status)
+      return Response.redirect(returnUrl.toString(), 302)
     }
 
     const update: Record<string, unknown> = {
@@ -98,38 +136,6 @@ serve(async (req) => {
           { onConflict: "user_id,audience" },
         )
       }
-    }
-
-    if (req.method === "GET") {
-      // Get redirect URL from metadata
-      const redirectUrl = metadata?.redirect_url || "/trade-coins"
-      
-      // Determine app URL from referer or environment
-      const referer = req.headers.get("referer")
-      let appUrl = "http://localhost:3000"
-      
-      if (referer) {
-        // Extract domain from referer (e.g., https://example.com/path -> https://example.com)
-        const refererUrl = new URL(referer)
-        appUrl = refererUrl.origin
-      } else {
-        // Try environment variables in order of preference
-        appUrl = Deno.env.get("NEXT_PUBLIC_APP_URL") || 
-                 Deno.env.get("NEXT_PUBLIC_SITE_URL") || 
-                 Deno.env.get("APP_URL") || 
-                 "http://localhost:3000"
-      }
-      
-      // Redirect to the appropriate page with payment status
-      const targetUrl = `${appUrl}${redirectUrl}?payment_reference=${encodeURIComponent(reference || transactionId || "")}&status=${status}`
-      
-      return new Response(null, {
-        status: 302,
-        headers: {
-          "Location": targetUrl,
-          ...corsHeaders,
-        },
-      })
     }
 
     return new Response(JSON.stringify({ received: true }), {

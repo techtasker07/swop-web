@@ -19,7 +19,7 @@ export async function POST(request: Request) {
         tx_ref: txRef,
         amount: body.amount,
         currency: "NGN",
-        redirect_url: `${origin}${body.redirectPath || "/pricing"}?payment_reference=${txRef}`,
+        redirect_url: `${origin}/payment-return?return_to=${encodeURIComponent(body.redirectPath || "/pricing")}`,
         customer: {
           email: body.email,
           name: body.name || body.email,

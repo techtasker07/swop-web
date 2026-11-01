@@ -44,11 +44,18 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
 
     try {
       // Check if conversation already exists
-      // Query for conversations where both users are participants
-      const { data: allConversations } = await supabase
+      // Find conversations associated with this listing (or direct messages without a listing).
+      let conversationQuery = supabase
         .from("conversations")
         .select("id")
-        .eq("listing_id", initialListing?.id || null)
+
+      conversationQuery = initialListing?.id
+        ? conversationQuery.eq("listing_id", initialListing.id)
+        : conversationQuery.is("listing_id", null)
+
+      const { data: allConversations, error: conversationsError } = await conversationQuery
+
+      if (conversationsError) throw conversationsError
 
       let conversationId = null
       
@@ -60,6 +67,8 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
             .select("participants")
             .eq("id", conv.id)
             .single()
+
+          if (convData === null) continue
           
           if (convData?.participants && 
               convData.participants.includes(currentUser.id) && 
@@ -77,7 +86,7 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
           .insert({
             participants: [currentUser.id, recipient.id],
             listing_id: initialListing?.id || null,
-            last_message_at: new Date().toISOString(),
+            last_message_time: new Date().toISOString(),
           })
           .select()
           .single()
@@ -104,10 +113,10 @@ export function NewMessageForm({ currentUser, initialListing, initialRecipient }
         throw messageError
       }
 
-      // Update conversation last_message_at
+      // Keep the conversation's activity timestamp in sync with its latest message.
       const { error: updateError } = await supabase
         .from("conversations")
-        .update({ last_message_at: new Date().toISOString() })
+        .update({ last_message_time: new Date().toISOString() })
         .eq("id", conversationId)
 
       if (updateError) {

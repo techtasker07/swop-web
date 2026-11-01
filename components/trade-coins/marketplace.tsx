@@ -102,7 +102,7 @@ export function TradeCoinMarketplace({ userId }: TradeCoinMarketplaceProps) {
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <div className="rounded-[1.5rem] border border-[#32cd32]/40 bg-[#001f1f]/50 p-4">
             <p className="text-xs font-semibold uppercase text-white/60">Total Balance</p>
-            <p className="mt-2 text-3xl font-bold">{balance.toLocaleString()} <span className="text-base text-[#32cd32]">TC</span></p>
+            <p className="mt-2 text-3xl font-bold">{balance.toLocaleString("en-NG", { maximumFractionDigits: 2 })} <span className="text-base text-[#32cd32]">TC</span></p>
           </div>
           <div className="rounded-[1.5rem] border border-[#32cd32]/40 bg-[#001f1f]/50 p-4">
             <p className="text-xs font-semibold uppercase text-white/60">Wallet Value</p>
@@ -144,7 +144,7 @@ export function TradeCoinMarketplace({ userId }: TradeCoinMarketplaceProps) {
                 <Row label="Flutterwave charge (2%)" value={`+${formatNaira(quote.flutterwaveCharge)}`} />
                 <Row label="VAT on Flutterwave charge (7%)" value={`+${formatNaira(quote.flutterwaveVat)}`} />
                 <div className="border-t border-gray-200 pt-3"><Row label="Total before payment" value={formatNaira(quote.totalPayable)} strong /></div>
-                <div className="border-t border-gray-200 pt-3"><Row label="Coins to receive" value={`${quote.coins.toLocaleString()} TC`} strong /></div>
+                <div className="border-t border-gray-200 pt-3"><Row label="Coins to receive" value={`${quote.coins.toLocaleString("en-NG", { maximumFractionDigits: 2 })} TC`} strong /></div>
               </div>
             )}
           </div>
