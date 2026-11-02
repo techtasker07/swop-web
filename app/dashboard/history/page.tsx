@@ -271,8 +271,10 @@ export default function HistoryPage() {
                             {cancellingTradeId === trade.id ? "..." : "Delete"}
                           </Button>
                         )}
-                        <Button asChild className="rounded-full bg-[#073232]" size="sm" onClick={(e) => e.preventDefault()}>
-                          <span>View</span>
+                        <Button asChild className="rounded-full bg-[#073232]" size="sm">
+                          <Link href={`/dashboard/history/trades/${trade.id}`}>
+                            View
+                          </Link>
                         </Button>
                       </div>
                     </CardContent>
